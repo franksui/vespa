@@ -73,7 +73,7 @@ EnumStoreT<EntryT>::load_unique_values_internal(const void* src, size_t availabl
 
 template <class EntryT>
 ssize_t
-EnumStoreT<EntryT>::load_unique_value(const void* src, size_t available, Index& idx)
+EnumStoreT<EntryT>::load_unique_value(const void* src, size_t available, Index& idx) // (SUI): 对 string 用 const char* 存的，有单独的实现
 {
     if (available < sizeof(EntryType)) {
         return -1;

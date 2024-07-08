@@ -36,7 +36,7 @@ private:
     friend class attribute::PostingSearchContext; // getEnumStore()
 
     using LoadedVector = typename B::LoadedVector;
-    using PostingParent = PostingListAttributeSubBase<AttributePosting,
+    using PostingParent = PostingListAttributeSubBase<AttributePosting, // (SUI): AttributePosting = BTreeKeyData<uint32_t, vespalib::btree::BTreeNoLeafData>;
                                                       LoadedVector,
                                                       typename B::LoadedValueType,
                                                       typename B::EnumStore>;

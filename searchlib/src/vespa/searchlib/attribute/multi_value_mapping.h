@@ -31,7 +31,7 @@ private:
     using generation_t = vespalib::GenerationHandler::generation_t;
     using ConstArrayRef = vespalib::ConstArrayRef<ElemT>;
 
-    ArrayStore _store;
+    ArrayStore _store; // (SUI): 数据按照 offset 存在这里
 public:
     MultiValueMapping(const MultiValueMapping &) = delete;
     MultiValueMapping & operator = (const MultiValueMapping &) = delete;

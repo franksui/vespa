@@ -671,7 +671,7 @@ WriteableFileChunk::flush(bool block, uint64_t syncToken, CpuUsage::Category cpu
 {
     int32_t chunkId = flushLastIfNonEmpty(syncToken > _serialNum);
     if (chunkId >= 0) {
-        setSerialNum(syncToken);
+        setSerialNum(syncToken); // (SUI): flush 的时候更新 _serialNum
         auto task = makeLambdaTask([this, chunkId, serialNum=_serialNum, cpu_category] {
             internalFlush(chunkId, serialNum, cpu_category);
         });
@@ -735,7 +735,7 @@ WriteableFileChunk::append(uint64_t serialNum, uint32_t lid, vespalib::ConstBuff
     size_t oldSz(_active->size());
     LidMeta lm = _active->append(lid, data);
     setDiskFootprint(FileChunk::getDiskFootprint() - oldSz + _active->size());
-    return {getFileId().getId(), _active->getId(), lm.size()};
+    return {getFileId().getId(), _active->getId(), lm.size()}; // (SUI): fileId, chunkId, size
 }
 
 

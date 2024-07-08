@@ -58,8 +58,8 @@ EnumeratedLoaderBase::build_enum_value_remapping()
     _enum_value_remapping.resize(_indexes.size());
     enum_value = 0;
     for (auto &entry : sortdata) {
-        _indexes[enum_value] = entry.first;
-        _enum_value_remapping[entry.second] = enum_value;
+        _indexes[enum_value] = entry.first;   // (SUI): 排在第几位的 enum 在 _store 中的 offset 地址
+        _enum_value_remapping[entry.second] = enum_value; // (SUI): _store 中第 n 个 enum 排序之后是在第 x 位
         ++enum_value;
     }
     assert(std::adjacent_find(_indexes.begin(), _indexes.end(), [&comp](Index lhs, Index rhs) { return !comp.less(lhs, rhs); }) == _indexes.end());

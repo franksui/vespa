@@ -654,7 +654,7 @@ Proton::addDocumentDB(const document::DocumentType &docType,
                                   initializeThreads,
                                   bootstrapConfig->getHwInfo());
     try {
-        ret->start();
+        ret->start(); // (SUI): start 的过程中会 replay trans-log
     } catch (vespalib::Exception &e) {
         LOG(warning, "Failed to start database for document type '%s'; %s",
             docTypeName.toString().c_str(), e.what());

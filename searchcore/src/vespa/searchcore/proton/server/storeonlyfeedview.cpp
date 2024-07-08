@@ -258,7 +258,7 @@ StoreOnlyFeedView::preparePut(PutOperation &putOp)
 {
     const DocumentId &docId = putOp.getDocument()->getId();
     const document::GlobalId &gid = docId.getGlobalId();
-    documentmetastore::IStore::Result inspectResult = _metaStore.inspect(gid, putOp.get_prepare_serial_num());
+    documentmetastore::IStore::Result inspectResult = _metaStore.inspect(gid, putOp.get_prepare_serial_num()); // (SUI): 查找是否存在以及分配 lid
     putOp.setDbDocumentId(DbDocumentId(_params._subDbId, inspectResult._lid));
     assert(_params._subDbType != SubDbType::REMOVED);
     setPrev(putOp, inspectResult, _params._subDbId, false);
@@ -287,7 +287,7 @@ StoreOnlyFeedView::internalPut(FeedToken token, const PutOperation &putOp)
          putOp.getSubDbId(), putOp.getLid(), putOp.getPrevSubDbId(), putOp.getPrevLid(),
          _params._subDbId, doc->toString(true).size(), doc->toString(true).c_str());
 
-    adjustMetaStore(putOp, docId.getGlobalId(), docId);
+    adjustMetaStore(putOp, docId.getGlobalId(), docId); // (SUI): 更新 docmeta 信息
 
     bool docAlreadyExists = putOp.getValidPrevDbdId(_params._subDbId);
 
@@ -303,7 +303,7 @@ StoreOnlyFeedView::internalPut(FeedToken token, const PutOperation &putOp)
              * active throttler tokens to be destroyed.
              */
             FeedToken token_copy = (token && !token->is_replay()) ? token : FeedToken();
-            _gidToLidChangeHandler.notifyPut(std::move(token_copy), docId.getGlobalId(), putOp.getLid(), serialNum);
+            _gidToLidChangeHandler.notifyPut(std::move(token_copy), docId.getGlobalId(), putOp.getLid(), serialNum); // (SUI): commit 的时候生效？
         }
         auto onWriteDone = createPutDoneContext(std::move(token), {}, get_pending_lid_token(putOp), doc, putOp.getLid());
         putSummary(serialNum, putOp.getLid(), doc, onWriteDone);
@@ -628,7 +628,7 @@ void
 StoreOnlyFeedView::adjustMetaStore(const DocumentOperation &op, const GlobalId & gid, const DocumentId &docId)
 {
     const SerialNum serialNum = op.getSerialNum();
-    if (useDocumentMetaStore(serialNum)) {
+    if (useDocumentMetaStore(serialNum)) { // (SUI): 这里不是一直 true 么？ 什么情况下 serialNum 会不大于 _flushedDocumentMetaStoreSerialNum ？ replay 的时候？
         if (op.getValidDbdId(_params._subDbId)) {
             if (op.getType() == FeedOperation::MOVE &&
                 op.getValidPrevDbdId(_params._subDbId) &&

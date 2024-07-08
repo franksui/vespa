@@ -13,6 +13,9 @@ namespace vespalib {
  * occupied by multiple readers.  Readers will take a generation guard
  * by calling takeGuard().
  **/
+// (SUI): 用来管理 generation 的, 当前 generation 到多少了, 
+// 增加 generation(只有一个 writer 线程可以), reader 读需要获取 Guard,
+// 最旧还在被 reader 用到的 generation 是多少
 class GenerationHandler {
 public:
     using generation_t = uint64_t;
@@ -26,7 +29,7 @@ public:
     class GenerationHold
     {
         // least significant bit is invalid flag
-        std::atomic<uint32_t> _refCount;
+        std::atomic<uint32_t> _refCount; // (SUI): 最后一位为 1 表示 invalid
 
         static bool valid(uint32_t refCount) noexcept { return (refCount & 1) == 0u; }
     public:
@@ -87,7 +90,7 @@ private:
     std::atomic<generation_t>     _oldest_used_generation;
     std::atomic<GenerationHold *> _last;      // Points to "current generation" entry
     GenerationHold               *_first;     // Points to "firstUsedGeneration" entry
-    GenerationHold               *_free;      // List of free entries
+    GenerationHold               *_free;      // List of free entries // (SUI): 用来复用的
     uint32_t                      _numHolds;  // Number of allocated generation hold entries
 
     void set_generation(generation_t generation) noexcept { _generation.store(generation, std::memory_order_relaxed); }

@@ -338,7 +338,7 @@ FileStorManager::handlePersistenceMessage(const shared_ptr<api::StorageMessage>&
        auto result = _filestorHandler->schedule_and_get_next_async_message(msg);
        if (result.was_scheduled()) {
            if (result.has_async_message()) {
-               getThreadLocalHandler().processLockedMessage(result.release_async_message());
+               getThreadLocalHandler().processLockedMessage(result.release_async_message()); // (SUI): 处理消息命令
            }
            return true;
        }

@@ -207,7 +207,7 @@ StringAttribute::onLoadEnumerated(ReaderBase &attrReader)
     } else {
         auto loader = this->getEnumStoreBase()->make_enumerated_loader();
         loader.load_unique_values(udatBuffer->buffer(), udatBuffer->size());
-        loader.build_enum_value_remapping();
+        loader.build_enum_value_remapping();  // (SUI): sort
         load_enumerated_data(attrReader, loader);
     }
     return true;

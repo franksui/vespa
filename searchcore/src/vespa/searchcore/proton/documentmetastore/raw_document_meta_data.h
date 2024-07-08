@@ -20,7 +20,7 @@ struct RawDocumentMetaData
     using BucketId = document::BucketId;
     using Timestamp = storage::spi::Timestamp;
     GlobalId  _gid;
-    std::atomic<uint32_t> _bucket_used_bits_and_doc_size;
+    std::atomic<uint32_t> _bucket_used_bits_and_doc_size;  // (SUI): 低 8 位表示 bucket usedBits
     std::atomic<uint64_t> _timestamp;
 
     static uint32_t capped_doc_size(uint32_t doc_size) { return std::min(0xffffffu, doc_size); }

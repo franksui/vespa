@@ -89,10 +89,11 @@ GenerationHandler::update_oldest_used_generation()
         }
         GenerationHold *toFree = _first;
         assert(toFree->_next != nullptr);
-        _first = toFree->_next;
-        toFree->_next = _free;
+        _first = toFree->_next; // (SUI): 更新 _first 指向 _first 的 next
+        toFree->_next = _free;  // (SUI): 将之前的 first 放到 _free 链的最前面
         _free = toFree;
     }
+    // (SUI): 最旧的在用的 _generation
     _oldest_used_generation.store(_first->_generation, std::memory_order_relaxed);
 }
 
@@ -142,6 +143,7 @@ GenerationHandler::takeGuard() const
     return guard;
 }
 
+// (SUI): 只有一个写线程会调用该函数
 void
 GenerationHandler::incGeneration()
 {
@@ -161,15 +163,15 @@ GenerationHandler::incGeneration()
         nhold = new GenerationHold;
         ++_numHolds;
     } else {
-        nhold = _free;
+        nhold = _free;  // (SUI): 复用之前 free 的节点
         _free = nhold->_next;
     }
     nhold->_generation.store(ngen, std::memory_order_relaxed);
     nhold->_next = nullptr;
     nhold->setValid();
-    last->_next = nhold;
+    last->_next = nhold; // (SUI): 放链表最后
     set_generation(ngen);
-    _last.store(nhold, std::memory_order_release);
+    _last.store(nhold, std::memory_order_release); // (SUI): 更新 _last, _last 用 atomic 是因为读线程会获取 Guard
     update_oldest_used_generation();
 }
 

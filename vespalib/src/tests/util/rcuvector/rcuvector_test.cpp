@@ -445,9 +445,12 @@ void
 StressFixture::commit()
 {
     auto current_gen = generation_handler.getCurrentGeneration();
+    // (SUI): 将上一次调用 assign_generation 之后加入到 GenerationHolder 的节点标记为 current_gen
     g.assign_generation(current_gen);
     generation_handler.incGeneration();
+    // (SUI): 获取最旧的还在用的 generation
     auto first_used_gen = generation_handler.get_oldest_used_generation();
+    // (SUI): 释放小于 first_used_gen 的内存
     g.reclaim(first_used_gen);
 }
 
@@ -469,6 +472,7 @@ StressFixture::read_work()
     while (!stop_read.load(std::memory_order_relaxed)) {
         uint32_t idx = distrib(gen);
         auto guard = generation_handler.takeGuard();
+        // (SUI): vespalib::atomic::load_ref_relaxed(_data.acquire_elem_ref(doc));
         int value = arr.acquire_elem_ref(idx).load_acquire();
         EXPECT_LE(old[idx], value);
         old[idx] = value;
@@ -492,6 +496,7 @@ StressFixture::write_work(uint32_t cnt)
             arr.shrink(read_area);
         }
         uint32_t idx = distrib(gen);
+        // (SUI): 非 atomic 类型的话，可以这样 vespalib::atomic::store_ref_relaxed(_data[change._doc], change._data);
         arr[idx].store_release(arr[idx].load_relaxed() + 1);
         commit();
         consider_yield(i);

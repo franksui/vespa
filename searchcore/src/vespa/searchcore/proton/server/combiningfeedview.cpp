@@ -112,7 +112,7 @@ CombiningFeedView::preparePut(PutOperation &putOp)
     if (!putOp.getPrevDbDocumentId().valid()) {
         const DocumentId &docId = putOp.getDocument()->getId();
         const document::GlobalId &gid = docId.getGlobalId();
-        findPrevDbdId(gid, putOp);
+        findPrevDbdId(gid, putOp); // (SUI): 找一下是否是在其他两个 subDBs 里
     }
 }
 

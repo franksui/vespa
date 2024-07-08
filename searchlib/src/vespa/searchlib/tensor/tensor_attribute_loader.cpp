@@ -214,7 +214,7 @@ TensorAttributeLoader::load_dense_tensor_store(BlobSequenceReader& reader, uint3
         reader.readBlob(&presence_flag, sizeof(presence_flag));
         if (is_present(presence_flag)) {
             auto raw = dense_store.allocRawBuffer();
-            reader.readBlob(raw.data, dense_store.getBufSize());
+            reader.readBlob(raw.data, dense_store.getBufSize()); // bufSize 是元素个数*元素大小
             _ref_vector.push_back(AtomicEntryRef(raw.ref));
         } else {
             _ref_vector.push_back(AtomicEntryRef());
@@ -316,7 +316,7 @@ TensorAttributeLoader::on_load(vespalib::Executor* executor)
         bool use_index_file = false;
         if (has_index_file(_attr)) {
             auto header = AttributeHeader::extractTags(reader.getDatHeader(), _attr.getBaseFileName());
-            use_index_file = can_use_index_save_file(_attr.getConfig(), header);
+            use_index_file = can_use_index_save_file(_attr.getConfig(), header); // (SUI): 比较是否是相同的参数
         }
         if (use_index_file) {
             if (!load_index()) {

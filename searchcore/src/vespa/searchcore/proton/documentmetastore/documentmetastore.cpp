@@ -479,7 +479,7 @@ DocumentMetaStore::inspect(const GlobalId &gid, uint64_t prepare_serial_num)
     _gid_to_lid_map_write_itr_prepare_serial_num = prepare_serial_num;
     bool found = itr.valid() && !comp(find_key, itr.getKey());
     if (!found) {
-        DocId myLid = peekFreeLid();
+        DocId myLid = peekFreeLid(); // (SUI):  为什么是 peek ？
         res.setLid(myLid);
         res.markSuccess();
     } else {

@@ -26,7 +26,7 @@ public:
 
 protected:
     std::shared_ptr<vespalib::alloc::MemoryAllocator> _memory_allocator;
-    RefVector _indices;
+    RefVector _indices; // (SUI): 存 doc 的 offset
     size_t    _totalValues;
 
     MultiValueMappingBase(const vespalib::GrowStrategy &gs, vespalib::GenerationHolder &genHolder, std::shared_ptr<vespalib::alloc::MemoryAllocator> memory_allocator);

@@ -34,7 +34,7 @@ ChunkFormat::pack(uint64_t lastSerial, vespalib::DataBuffer & compressed, Compre
     compressed.writeInt8(compression.type);
     compressed.writeInt32(os.size());
     CompressionConfig::Type type(compress(compression, vespalib::ConstBufferRef(os.data(), os.size()), compressed, false));
-    if (compression.type != type) {
+    if (compression.type != type) { // (SUI): 什么时候不相等？
         compressed.getData()[oldPos] = type;
     }
     if (includeSerializedSize()) {

@@ -14,6 +14,7 @@ namespace vespalib {
  *
  * This class must be used in accordance with a GenerationHandler.
  */
+// (SUI): 存等待释放的内存, 配合 generation 使用
 template <typename T, bool track_bytes_held, bool use_deque>
 class GenerationHoldList {
 private:
@@ -76,6 +77,7 @@ public:
      * Reclaim all data elements where the assigned generation < oldest used generation.
      * The callback function is called for each data element reclaimed.
      **/
+    // (SUI): reclaim -> 收回、取回
     template<typename Func>
     void reclaim(generation_t oldest_used_gen, Func callback) {
         if (!_phase_2_list.empty() && (_phase_2_list.front().gen < oldest_used_gen)) {

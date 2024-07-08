@@ -229,7 +229,7 @@ DocumentDB::DocumentDB(const vespalib::string &baseDir,
 
     LOG(debug, "DocumentDB(%s): Creating database in directory '%s'", _docTypeName.toString().c_str(), _baseDir.c_str());
 
-    _feedHandler->init(_config_store->getOldestSerialNum());
+    _feedHandler->init(_config_store->getOldestSerialNum()); // (SUI): 
     _feedHandler->setBucketDBHandler(&_subDBs.getBucketDBHandler());
     saveInitialConfig(configSnapshot);
     resumeSaveConfig();
@@ -335,7 +335,7 @@ DocumentDB::initFinish(DocumentDBConfig::SP configSnapshot)
     assert(_writeService.master().isCurrentThread());
     _bucketHandler.setReadyBucketHandler(_subDBs.getReadySubDB()->getDocumentMetaStoreContext().get());
     _subDBs.initViews(*configSnapshot);
-    syncFeedView();
+    syncFeedView(); // (SUI): set feed view
     // Check that feed view has been activated.
     assert(_feedView.get());
     setActiveConfig(std::move(configSnapshot));

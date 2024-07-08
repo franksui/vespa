@@ -346,7 +346,7 @@ PersistenceEngine::getBucketInfo(const Bucket& b) const
     return resultHandler.getResult();
 }
 
-
+// (SUI): 写入 doc
 void
 PersistenceEngine::putAsync(const Bucket &bucket, Timestamp ts, storage::spi::DocumentSP doc, OperationComplete::UP onComplete)
 {

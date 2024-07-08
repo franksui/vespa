@@ -152,7 +152,7 @@ ensureLidSpace(SerialNum serialNum, DocumentIdT lid, AttributeVector &attr)
 {
     size_t docIdLimit = lid + 1;
     if (attr.getStatus().getLastSyncToken() < serialNum) {
-        AttributeManager::padAttribute(attr, docIdLimit);
+        AttributeManager::padAttribute(attr, docIdLimit); // (SUI): 没太懂这里
     }
 }
 
@@ -321,7 +321,7 @@ FieldContext::FieldContext(ISequencedTaskExecutor &writer, AttributeVector *attr
     :  _name(attr->getName()),
        _executorId(writer.getExecutorIdFromName(attr->getNamePrefix())),
        _attr(attr),
-       _use_two_phase_put(use_two_phase_put_for_attribute(*attr))
+       _use_two_phase_put(use_two_phase_put_for_attribute(*attr)) // (SUI): TENSOR && hsnw multi_threaded_indexing
 {
 }
 

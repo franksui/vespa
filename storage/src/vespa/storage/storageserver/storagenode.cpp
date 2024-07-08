@@ -109,6 +109,7 @@ StorageNode::StorageNode(
 {
 }
 
+// (SUI): 初始化处理 chain
 void
 StorageNode::initialize(const NodeStateReporter & nodeStateReporter)
 {

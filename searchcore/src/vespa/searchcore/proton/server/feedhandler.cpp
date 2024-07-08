@@ -155,7 +155,7 @@ void
 FeedHandler::performPut(FeedToken token, PutOperation &op) {
     op.assertValid();
     op.set_prepare_serial_num(inc_prepare_serial_num());
-    _activeFeedView->preparePut(op);
+    _activeFeedView->preparePut(op); // (SUI): 获取 lid && 查找是否之前写入过
     if (ignoreOperation(op)) {
         LOG(debug, "performPut(): ignoreOperation: docId(%s), timestamp(%" PRIu64 "), prevTimestamp(%" PRIu64 ")",
             op.getDocument()->getId().toString().c_str(), (uint64_t)op.getTimestamp(), (uint64_t)op.getPrevTimestamp());
@@ -172,7 +172,7 @@ FeedHandler::performPut(FeedToken token, PutOperation &op) {
     if (_repo != op.getDocument()->getRepo()) {
         op.deserializeDocument(*_repo);
     }
-    appendOperation(op, token);
+    appendOperation(op, token); // (SUI): append translog
     if (token) {
         token->setResult(make_unique<Result>(), false);
     }
@@ -559,7 +559,7 @@ FeedHandler::appendOperation(const FeedOperation &op, TlsWriter::DoneCallback on
     if (!op.getSerialNum()) {
         const_cast<FeedOperation &>(op).setSerialNum(inc_serial_num());
     }
-    _tlsWriter->appendOperation(op, std::move(onDone));
+    _tlsWriter->appendOperation(op, std::move(onDone)); // (SUI): translog
     _numOperations.startOperation();
     if (_numOperations.operationsInFlight() == 1) {
         enqueCommitTask();

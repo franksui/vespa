@@ -33,6 +33,7 @@ using GenerationHolderParent = GenerationHoldList<GenerationHeldBase::UP, true, 
  * GenerationHolder is meant to hold large elements until readers can
  * no longer access them.
  */
+// (SUI): 持有内存直到没有读了之后清除
 class GenerationHolder : public GenerationHolderParent {
 public:
     GenerationHolder() noexcept;

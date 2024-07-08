@@ -35,7 +35,7 @@ protected:
     ~SingleValueEnumAttributeBase();
     AttributeVector::DocId addDoc(bool & incGeneration);
 
-    AtomicEntryRefVector _enumIndices;
+    AtomicEntryRefVector _enumIndices;  // (SUI): doc 的这个 attribute 排序之后在第几
 
     void remap_enum_store_refs(const EnumIndexRemapper& remapper, AttributeVector& v);
 };

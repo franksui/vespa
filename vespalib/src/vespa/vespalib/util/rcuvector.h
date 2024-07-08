@@ -35,7 +35,7 @@ class RcuVectorBase
 {
 private:
     static_assert(std::is_trivially_destructible<T>::value,
-                  "Value type must be trivially destructible");
+                  "Value type must be trivially destructible");  // (SUI): 可以平凡析构，没有自定义的析构函数
 
     using ArrayType = Array<T>;
     using Alloc = alloc::Alloc;

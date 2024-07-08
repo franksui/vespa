@@ -931,14 +931,14 @@ LogDataStore::setLid(const MonitorGuard &guard, uint32_t lid, const LidInfo &met
         _lidInfo.reclaim_memory(_genHandler.get_oldest_used_generation());
         const LidInfo prev = vespalib::atomic::load_ref_relaxed(_lidInfo[lid]);
         if (prev.valid()) {
-            _fileChunks[prev.getFileId()]->remove(lid, prev.size());
+            _fileChunks[prev.getFileId()]->remove(lid, prev.size()); // (SUI): 清掉之前的空间，只是 count 和 bytes 做了相应的减少
         }
     } else {
         _lidInfo.ensure_size(lid+1, LidInfo());
         incGeneration();
     }
     updateDocIdLimit(lid + 1);
-    vespalib::atomic::store_ref_release(_lidInfo[lid], meta);
+    vespalib::atomic::store_ref_release(_lidInfo[lid], meta); // (SUI): LidInfo 写进去
 }
 
 void
