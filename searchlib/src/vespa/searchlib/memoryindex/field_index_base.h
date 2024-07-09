@@ -73,7 +73,7 @@ public:
 protected:
     using GenerationHandler = vespalib::GenerationHandler;
 
-    WordStore               _wordStore;
+    WordStore               _wordStore; // (SUI): 存 dict 的 word
     uint64_t                _numUniqueWords;
     GenerationHandler       _generationHandler;
     DictionaryTree          _dict;

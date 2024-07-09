@@ -56,6 +56,7 @@ OrderedFieldIndexInserter<interleaved_features>::flushWord()
     if (_removes.size() == _removes_offset && _adds.size() == _adds_offset) {
         return;
     }
+    // (SUI): 把 word 添加的 doc 和删除的 doc 添加到 _word_entries
     _word_entries.emplace_back(_word, _adds.size() - _adds_offset, _removes.size() - _removes_offset);
     _adds_offset = _adds.size();
     _removes_offset = _removes.size();
@@ -69,7 +70,7 @@ OrderedFieldIndexInserter<interleaved_features>::flush()
     assert(_adds_offset == _adds.size());
     assert(_removes_offset == _removes.size());
     if (!_adds.empty()) {
-        _fieldIndex.add_features_guard_bytes();
+        _fieldIndex.add_features_guard_bytes(); // (SUI): 加了个 guard 因为读的时候可能会超出数据的长度
     }
     const WordStore &wordStore(_fieldIndex.getWordStore());
     PostingListStore &postingListStore(_fieldIndex.getPostingListStore());
@@ -81,10 +82,10 @@ OrderedFieldIndexInserter<interleaved_features>::flush()
         vespalib::ConstArrayRef<uint32_t> removes(_removes.data() + removes_offset, std::get<2>(word_entry));
         KeyComp cmp(wordStore, word);
         WordKey key;
-        if (_dItr.valid() && cmp(_dItr.getKey(), key)) {
-            _dItr.binarySeek(key, cmp);
+        if (_dItr.valid() && cmp(_dItr.getKey(), key)) { // (SUI): _dIter 有效且 key >  _dIter.getKey()
+            _dItr.binarySeek(key, cmp); // (SUI): 查找 key, 查找之后要么 _dIter.getKey() 跟 key 相等, 要么 _dIter.getKey() 大于 key
         }
-        if (!_dItr.valid() || cmp(key, _dItr.getKey())) {
+        if (!_dItr.valid() || cmp(key, _dItr.getKey())) { // (SUI): _dIter 无效或者 key < _dIter.getKey(); 也就是没找到 key, 需要插入
             vespalib::datastore::EntryRef wordRef = _fieldIndex.addWord(word);
             WordKey insertKey(wordRef);
             DictionaryTree &dTree(_fieldIndex.getDictionaryTree());
@@ -93,17 +94,18 @@ OrderedFieldIndexInserter<interleaved_features>::flush()
         assert(_dItr.valid());
         assert(word == wordStore.getWord(_dItr.getKey()._wordRef));
         for (auto& add_entry : adds) {
-            _listener.insert(_dItr.getKey()._wordRef, add_entry._key);
+            _listener.insert(_dItr.getKey()._wordRef, add_entry._key); // (SUI): 将 word 和 docid 记录下, 删除的时候会从这里删？
         }
         //XXX: Feature store leak, removed features not marked dead
-        vespalib::datastore::EntryRef pidx(_dItr.getData().load_relaxed());
+        vespalib::datastore::EntryRef pidx(_dItr.getData().load_relaxed()); // (SUI): 获取旧地址
+        // (SUI): btree key 是 docid, value 是 featuresRef,occ,field_length
         postingListStore.apply(pidx,
                                adds.begin(),
                                adds.end(),
                                removes.begin(),
                                removes.end());
         if (pidx != _dItr.getData().load_relaxed()) {
-            _dItr.getWData().store_release(pidx);
+            _dItr.getWData().store_release(pidx); // (SUI): 更新新的地址
         }
         adds_offset += adds.size();
         removes_offset += removes.size();
@@ -173,7 +175,7 @@ OrderedFieldIndexInserter<interleaved_features>::rewind()
     _word = "";
     _prevDocId = noDocId;
     _prevAdd = false;
-    _dItr.begin();
+    _dItr.begin(); // (SUI): dict begin
 }
 
 template <bool interleaved_features>

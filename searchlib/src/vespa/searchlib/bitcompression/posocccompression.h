@@ -20,6 +20,7 @@ namespace search::bitcompression {
 
 class PosOccFieldsParams;
 
+// (SUI): EG means ExpGolomb
 template <bool bigEndian>
 class EG2PosOccDecodeContext : public FeatureDecodeContext<bigEndian>
 {

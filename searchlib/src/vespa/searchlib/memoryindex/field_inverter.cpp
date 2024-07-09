@@ -58,7 +58,7 @@ FieldInverter::processAnnotations(const StringFieldValue &value, const Document&
             uint32_t wordRef = saveWord(it->word);
             add(wordRef);
         }
-        stepWordPos();
+        stepWordPos(); // (SUI): wordpos ++
     }
 }
 
@@ -68,7 +68,7 @@ FieldInverter::reset()
     _words.clear();
     _elems.clear();
     _positions.clear();
-    _wordRefs.resize(1);
+    _wordRefs.resize(1); // (SUI): 第一个没用？
     _pendingDocs.clear();
     _abortedDocs.clear();
     _removeDocs.clear();
@@ -84,6 +84,7 @@ FieldInverter::sortWords()
 {
     assert(_wordRefs.size() > 1);
 
+    // (SUI): 没太懂为啥要用前 4 个 bytes，直接排不行么？ 会快一些?
     // Make a dictionary for words.
     { // Use radix sort based on first four bytes of word, before finalizing with std::sort.
         vespalib::Array<uint64_t> firstFourBytes(_wordRefs.size());
@@ -97,6 +98,7 @@ FieldInverter::sortWords()
             _wordRefs[i] = firstFourBytes[i] & 0xffffffffl;
         }
     }
+
     // Populate word numbers in word buffer and mapping from
     // word numbers to word reference.
     // TODO: shrink word buffer to only contain unique words
@@ -109,6 +111,7 @@ FieldInverter::sortWords()
         const char *word = getWordFromRef(*w);
         int cmpres = strcmp(lastWord, word);
         assert(cmpres <= 0);
+        // (SUI): 确定 < 的话, 更新 wordNum, 相等的时候说明是同样的 word 不更新
         if (cmpres < 0) {
             ++wordNum;
             _wordRefs[wordNum] = *w;
@@ -120,7 +123,7 @@ FieldInverter::sortWords()
     _wordRefs.resize(wordNum + 1);
     // Replace initial word reference by word number.
     for (auto &p : _positions) {
-        p._wordNum = getWordNum(p._wordNum);
+        p._wordNum = getWordNum(p._wordNum); // 更新 _positions 里的 word 排序
     }
 }
 
@@ -133,7 +136,7 @@ FieldInverter::startElement(int32_t weight)
 void
 FieldInverter::endElement()
 {
-    _elems.back().setLen(_wpos);
+    _elems.back().setLen(_wpos); // (SUI): element 的 length
     _wpos = 0;
     ++_elem;
 }
@@ -149,11 +152,11 @@ FieldInverter::saveWord(vespalib::stringref word)
     _words.resize(fullyPaddedSize);
 
     char * buf = &_words[0] + wordsSize;
-    memset(buf, 0, 4);
-    memcpy(buf + 4, word.data(), word.size());
-    memset(buf + 4 + word.size(), 0, fullyPaddedSize - unpadded_size + 1);
+    memset(buf, 0, 4); // (SUI): 塞 4 bit 的 0, 后面会有用
+    memcpy(buf + 4, word.data(), word.size()); // (SUI): 塞 word
+    memset(buf + 4 + word.size(), 0, fullyPaddedSize - unpadded_size + 1); // (SUI): 对齐
 
-    uint32_t wordRef = (wordsSize + 4) >> 2;
+    uint32_t wordRef = (wordsSize + 4) >> 2; // (SUI): offset / 2
     // assert(wordRef != 0);
     _wordRefs.push_back(wordRef);
     return wordRef;
@@ -171,20 +174,20 @@ FieldInverter::endDoc()
 {
     uint32_t field_length = 0;
     if (_elem > 0) {
-        auto itr = _elems.end() - _elem;
+        auto itr = _elems.end() - _elem;  // (SUI): 统计所有 elem 的长度相加作为 field_length
         while (itr != _elems.end()) {
             field_length += itr->_len;
             ++itr;
         }
         itr = _elems.end() - _elem;
         while (itr != _elems.end()) {
-            itr->set_field_length(field_length);
+            itr->set_field_length(field_length); // (SUI): 更新 field_length
             ++itr;
         }
     }
     _calculator.add_field_length(field_length);
     uint32_t newPosSize = static_cast<uint32_t>(_positions.size());
-    _pendingDocs.insert({ _docId, { _oldPosSize, newPosSize - _oldPosSize } });
+    _pendingDocs.insert({ _docId, { _oldPosSize, newPosSize - _oldPosSize } }); // (SUI): doc 在 _positions 的起始位置和长度
     _docId = 0;
     _oldPosSize = newPosSize;
 }
@@ -203,7 +206,7 @@ FieldInverter::addWord(vespalib::stringref word, const document::Document& doc)
 void
 FieldInverter::processNormalDocTextField(const StringFieldValue &field, const Document& doc)
 {
-    startElement(1);
+    startElement(1);  // (SUI): 对 TextField weight 设为 1
     processAnnotations(field, doc);
     endElement();
 }
@@ -232,7 +235,7 @@ FieldInverter::processNormalDocWeightedSetTextField(const WeightedSetFieldValue 
         assert(key.isA(FieldValue::Type::STRING));
         assert(xweight.isA(FieldValue::Type::INT));
         const auto &element = static_cast<const StringFieldValue &>(key);
-        int32_t weight = xweight.getAsInt();
+        int32_t weight = xweight.getAsInt(); // (SUI): weight 是 int
         startElement(weight);
         processAnnotations(element, doc);
         endElement();
@@ -303,6 +306,7 @@ FieldInverter::moveNotAbortedDocs(uint32_t &dstIdx,
     dstIdx += size;
 }
 
+// (SUI): 把 abort 的 doc 从 _position 里删掉
 void
 FieldInverter::trimAbortedDocs()
 {
@@ -330,7 +334,7 @@ FieldInverter::invertField(uint32_t docId, const FieldValue::UP &val, const Docu
 {
     (void) doc;
     if (val) {
-        startDoc(docId);
+        startDoc(docId); // 重置 doc 相关的字段
         invertNormalDocTextField(*val, doc);
         endDoc();
     } else {
@@ -342,8 +346,8 @@ void
 FieldInverter::startDoc(uint32_t docId) {
     assert(_docId == 0);
     assert(docId != 0);
-    abortPendingDoc(docId);
-    _removeDocs.push_back(docId);
+    abortPendingDoc(docId); // (SUI): 把正在等待的 docId 的 doc 清掉，用最新的 doc
+    _removeDocs.push_back(docId); // (SUI): 这个 remove 是做什么的？ 应该是先删除索引中的旧的 doc
     _docId = docId;
     _elem = 0;
     _wpos = 0;
@@ -355,7 +359,7 @@ FieldInverter::invertNormalDocTextField(const FieldValue &val, const Document& d
     const Schema::IndexField &field = _schema.getIndexField(_fieldId);
     switch (field.getCollectionType()) {
     case CollectionType::SINGLE:
-        if (val.isA(FieldValue::Type::STRING)) {
+        if (val.isA(FieldValue::Type::STRING)) { // (SUI): 建倒排的字段类型只能是 string
             processNormalDocTextField(static_cast<const StringFieldValue &>(val), doc);
         } else {
             throw std::runtime_error(make_string("Expected DataType::STRING, got '%s'", val.getDataType()->getName().c_str()));
@@ -413,7 +417,7 @@ FieldInverter::applyRemoves()
 void
 FieldInverter::push_documents_internal()
 {
-    trimAbortedDocs();
+    trimAbortedDocs(); // (SUI): 清除 _positions 里无效的 doc
 
     if (_positions.empty()) {
         reset();
@@ -422,6 +426,7 @@ FieldInverter::push_documents_internal()
 
     sortWords();
 
+    // (SUI): 按照 wordNum, docId, elemId, wordPos, elemRef 排序 
     // Sort for terms.
     ShiftBasedRadixSorter<PosInfo, FullRadix, std::less<PosInfo>, 56, true>::
         radix_sort(FullRadix(), std::less<PosInfo>(), &_positions[0], _positions.size(), 16);
@@ -442,26 +447,27 @@ FieldInverter::push_documents_internal()
     for (auto &i : _positions) {
         assert(i._wordNum <= numWordIds);
         (void) numWordIds;
+        // (SUI): 新的 word 或者新的 doc
         if (lastWordNum != i._wordNum || lastDocId != i._docId) {
             if (!emptyFeatures) {
                 _features.set_num_occs(_features.word_positions().size());
-                _inserter.add(lastDocId, _features);
+                _inserter.add(lastDocId, _features); // (SUI): docId 对应 features 写入
                 emptyFeatures = true;
             }
-            if (lastWordNum != i._wordNum) {
+            if (lastWordNum != i._wordNum) { // (SUI): 新的 word
                 lastWordNum = i._wordNum;
                 word = getWordFromNum(lastWordNum);
-                _inserter.setNextWord(word);
+                _inserter.setNextWord(word); // (SUI): flush 之前的word; 设置新的 word
             }
             lastDocId = i._docId;
             if (i.removed()) {
-                _inserter.remove(lastDocId);
+                _inserter.remove(lastDocId); // (SUI): 加入到 remove 队列
                 continue;
             }
         }
         if (emptyFeatures) {
             if (!i.removed()) {
-                emptyFeatures = false;
+                emptyFeatures = false;  // (SUI): 标记新的 feature ？
                 _features.clear(lastDocId);
                 lastElemId = NO_ELEMENT_ID;
                 lastWordPos = NO_WORD_POS;
@@ -478,7 +484,7 @@ FieldInverter::push_documents_internal()
             assert(last_field_length == elem.get_field_length());
         }
         const ElemInfo &elem = _elems[i._elemRef];
-        if (i._wordPos != lastWordPos || i._elemId != lastElemId) {
+        if (i._wordPos != lastWordPos || i._elemId != lastElemId) { // (SUI): elem id 对 array 和 weightedset 多 element 的数据会有不等的情况
             _features.addNextOcc(i._elemId, i._wordPos,
                                  elem._weight, elem._len);
             lastElemId = i._elemId;

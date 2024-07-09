@@ -13,6 +13,7 @@ namespace index {
  * Used by the index maintainer.
  */
 struct IndexReadUtilities {
+    // (SUI): index.fusion.xx  index.flush.xx
     static FusionSpec readFusionSpec(const vespalib::string &baseDir);
     static search::SerialNum readSerialNum(const vespalib::string &dir);
 };

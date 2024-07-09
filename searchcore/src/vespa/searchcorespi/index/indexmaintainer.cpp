@@ -901,7 +901,7 @@ IndexMaintainer::IndexMaintainer(const IndexMaintainerConfig &config,
                                   ? getFusionDir(_next_id - 1)
                                   : getFlushDir(_next_id - 1);
 
-        set_flush_serial_num(IndexReadUtilities::readSerialNum(latest_index_dir));
+        set_flush_serial_num(IndexReadUtilities::readSerialNum(latest_index_dir)); // (SUI): 从 serial.dat 读 flush_serial_num
         _lastFlushTime = search::FileKit::getModificationTime(latest_index_dir);
         set_current_serial_num(flush_serial_num());
         const string selector = IndexDiskLayout::getSelectorFileName(latest_index_dir);
@@ -919,7 +919,7 @@ IndexMaintainer::IndexMaintainer(const IndexMaintainerConfig &config,
         _selector = getSourceSelector().cloneAndSubtract(ost.str(), id_diff);
         assert(_last_fusion_id == _selector->getBaseId());
     }
-    set_id_for_new_memory_index();
+    set_id_for_new_memory_index(); // (SUI): _next_id++ - _last_fusion_id; 
     _selector->setDefaultSource(_current_index_id);
     auto sourceList = loadDiskIndexes(spec, std::make_unique<IndexCollection>(_selector));
     _current_index = operations.createMemoryIndex(_schema, *sourceList, current_serial_num());

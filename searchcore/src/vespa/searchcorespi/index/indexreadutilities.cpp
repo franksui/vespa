@@ -30,11 +30,11 @@ scanForIndexes(const vespalib::string &baseDir,
     for (auto& entry : dir_scan) {
         if (entry.is_directory()) {
             vespalib::string name = entry.path().filename().string();
-            if (name.find(IndexDiskLayout::FlushDirPrefix) == 0) {
+            if (name.find(IndexDiskLayout::FlushDirPrefix) == 0) { // (SUI): index.flush.
                 flushDirs.push_back(name);
             }
-            if (name.find(IndexDiskLayout::FusionDirPrefix) == 0) {
-                if (!fusionDir.empty()) {
+            if (name.find(IndexDiskLayout::FusionDirPrefix) == 0) { // (SUI): index.fusion.
+                if (!fusionDir.empty()) {  // (SUI): 只能有一个 fussion 目录
                     // Should never happen, since we run cleanup before load.
                     LOG(warning, "Base directory '%s' contains multiple fusion indexes", baseDir.c_str());
                 }

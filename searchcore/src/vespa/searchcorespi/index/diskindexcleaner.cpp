@@ -31,6 +31,7 @@ vector<string> readIndexes(const string &base_dir) {
     return indexes;
 }
 
+// (SUI): 有 serial.dat 就是有效？
 bool isValidIndex(const string &index_dir) {
     FastOS_File serial_file((index_dir + "/serial.dat").c_str());
     return serial_file.OpenReadOnlyExisting();
@@ -67,6 +68,7 @@ void removeDir(const string &dir) {
     std::filesystem::remove_all(std::filesystem::path(dir));
 }
 
+// (SUI): fusion id < last_fusion_id; flush id == last_fusion_id
 bool isOldIndex(const string &index, uint32_t last_fusion_id) {
     string::size_type pos = index.rfind(".");
     istringstream ist(index.substr(pos + 1));

@@ -450,10 +450,10 @@ writeFeatures(const search::index::DocIdAndFeatures &features)
         _fieldsParams->getFieldParams()[0];
 
     uint32_t numElements = features.elements().size();
-    if (fieldParams._hasElements) {
+    if (fieldParams._hasElements) {  // (SUI): 是否是多个 element
         assert(numElements > 0u);
         encodeExpGolomb(numElements - 1,
-                        K_VALUE_POSOCC_NUMELEMENTS);
+                        K_VALUE_POSOCC_NUMELEMENTS);  // (SUI): 写 numELements
     } else {
         assert(numElements == 1);
     }
@@ -464,12 +464,12 @@ writeFeatures(const search::index::DocIdAndFeatures &features)
             uint32_t elementId = element->getElementId();
             assert(elementId >= minElementId);
             encodeExpGolomb(elementId - minElementId,
-                            K_VALUE_POSOCC_ELEMENTID);
+                            K_VALUE_POSOCC_ELEMENTID); // (SUI): 多 elem 的话，会写 elemId
             minElementId = elementId + 1;
-            if (fieldParams._hasElementWeights) {
+            if (fieldParams._hasElementWeights) { // (SUI): weightedset 有 weight
                 int32_t elementWeight = element->getWeight();
                 encodeExpGolomb(this->convertToUnsigned(elementWeight),
-                                K_VALUE_POSOCC_ELEMENTWEIGHT);
+                                K_VALUE_POSOCC_ELEMENTWEIGHT); // (SUI): 写 weight
             }
             if (__builtin_expect(_valI >= _valE, false)) {
                 _writeContext->writeComprBuffer(false);
@@ -481,18 +481,18 @@ writeFeatures(const search::index::DocIdAndFeatures &features)
         }
 
         encodeExpGolomb(element->getElementLen() - 1,
-                        K_VALUE_POSOCC_ELEMENTLEN);
+                        K_VALUE_POSOCC_ELEMENTLEN); // (SUI): elemLen
         uint32_t numPositions = element->getNumOccs();
         assert(numPositions > 0);
         encodeExpGolomb(numPositions - 1,
-                        K_VALUE_POSOCC_NUMPOSITIONS);
+                        K_VALUE_POSOCC_NUMPOSITIONS); // (SUI): posocc
 
         uint32_t wordPos = static_cast<uint32_t>(-1);
         do {
             uint32_t lastWordPos = wordPos;
             wordPos = position->getWordPos();
             encodeExpGolomb(wordPos - lastWordPos - 1,
-                            K_VALUE_POSOCC_FIRST_WORDPOS);
+                            K_VALUE_POSOCC_FIRST_WORDPOS); // (SUI): 先写第一个 wordPos
             if (__builtin_expect(_valI >= _valE, false)) {
                 _writeContext->writeComprBuffer(false);
             }
@@ -503,7 +503,7 @@ writeFeatures(const search::index::DocIdAndFeatures &features)
             uint32_t lastWordPos = wordPos;
             wordPos = position->getWordPos();
             encodeExpGolomb(wordPos - lastWordPos - 1,
-                            K_VALUE_POSOCC_DELTA_WORDPOS);
+                            K_VALUE_POSOCC_DELTA_WORDPOS); // (SUI): 再写后面的 wordPos delta
             if (__builtin_expect(_valI >= _valE, false)) {
                 _writeContext->writeComprBuffer(false);
             }

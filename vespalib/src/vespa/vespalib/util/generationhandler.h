@@ -88,7 +88,7 @@ public:
 private:
     std::atomic<generation_t>     _generation;
     std::atomic<generation_t>     _oldest_used_generation;
-    std::atomic<GenerationHold *> _last;      // Points to "current generation" entry
+    std::atomic<GenerationHold *> _last;      // Points to "current generation" entry // (SUI): 指向链表的尾节点，为最新的节点
     GenerationHold               *_first;     // Points to "firstUsedGeneration" entry
     GenerationHold               *_free;      // List of free entries // (SUI): 用来复用的
     uint32_t                      _numHolds;  // Number of allocated generation hold entries

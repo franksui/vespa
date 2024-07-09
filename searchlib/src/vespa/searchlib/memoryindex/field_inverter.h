@@ -37,10 +37,10 @@ class FieldInverter : public IFieldIndexRemoveListener {
 public:
     class PosInfo {
     public:
-        uint32_t _wordNum;      // XXX: Initially word reference
-        uint32_t _docId;
-        uint32_t _elemId;
-        uint32_t _wordPos;
+        uint32_t _wordNum;      // XXX: Initially word reference // (SUI): sorted index after sort
+        uint32_t _docId;  //
+        uint32_t _elemId; // (SUI): elem id 
+        uint32_t _wordPos; // (SUI): word pos in document
         uint32_t _elemRef;  // Offset in _elems
 
         static constexpr uint32_t _elemRemoved = std::numeric_limits<uint32_t>::max();
@@ -69,7 +69,7 @@ public:
         PosInfo(uint32_t wordRef, uint32_t docId) noexcept
             : _wordNum(wordRef),
               _docId(docId),
-              _elemId(_elemRemoved),
+              _elemId(_elemRemoved), // (SUI): 标记是要删除的
               _wordPos(0),
               _elemRef(0)
         {
@@ -169,24 +169,24 @@ private:
     const uint32_t                 _fieldId;   // current field id
     uint32_t                       _elem;      // current element
     uint32_t                       _wpos;      // current word pos
-    uint32_t                       _docId;
+    uint32_t                       _docId;     // (SUI): current docId
     uint32_t                       _oldPosSize;
 
     const index::Schema           &_schema;
     linguistics::TokenExtractor    _token_extractor;
 
-    WordBuffer                     _words;
-    ElemInfoVec                    _elems;
-    PosInfoVec                     _positions;
-    index::DocIdAndPosOccFeatures  _features;
-    UInt32Vector                   _wordRefs;
+    WordBuffer                     _words;    // (SUI): words  
+    ElemInfoVec                    _elems;    // (SUI): elem info: weight/len/field_length(不知道有啥用)
+    PosInfoVec                     _positions; // (SUI): elem wordRef, doc position
+    index::DocIdAndPosOccFeatures  _features;  // (SUI): 当前 doc 的 Pos Occ 信息
+    UInt32Vector                   _wordRefs;  // (SUI): _positions 里 elem 的 wordRef
 
     using SpanTerm = linguistics::TokenExtractor::SpanTerm;
     std::vector<SpanTerm>          _terms;
 
     // Info about aborted and pending documents.
     std::vector<PositionRange>                  _abortedDocs;
-    vespalib::hash_map<uint32_t, PositionRange> _pendingDocs;
+    vespalib::hash_map<uint32_t, PositionRange> _pendingDocs; // (SUI): docid -> _positions range, 只是用来删除 pending doc 用的？ push 的时候会重新处理 _positions, 对应关系就没了
     UInt32Vector                                _removeDocs;
 
     FieldIndexRemover                &_remover;
@@ -230,6 +230,7 @@ private:
     /**
      * Update mapping from word reference to word number.
      */
+    // (SUI): 将 word 的排序更新到 word 前面预留的 4 bits
     void updateWordNum(uint32_t wordRef, uint32_t wordNum) {
         char *p = &_words[static_cast<size_t>(wordRef - 1) << 2];
         *reinterpret_cast<uint32_t *>(p) = wordNum;

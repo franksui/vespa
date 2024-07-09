@@ -12,7 +12,7 @@ namespace {
 template <typename Inverter>
 void push_inverter(Inverter& inverter)
 {
-    inverter.applyRemoves();
+    inverter.applyRemoves(); // (SUI): 先 remove 再 push 
     inverter.pushDocuments();
 }
 

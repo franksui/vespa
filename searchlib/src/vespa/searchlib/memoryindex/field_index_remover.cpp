@@ -27,9 +27,9 @@ FieldIndexRemover::remove(uint32_t docId, IFieldIndexRemoveListener &listener)
     if (itr.valid()) {
         for (; itr.valid(); ++itr) {
             vespalib::stringref word = _wordStore.getWord(itr.wordRef());
-            listener.remove(word, docId);
+            listener.remove(word, docId);  // (SUI): 先对每个 word 删除 docId
         }
-        _store.remove(docId);
+        _store.remove(docId); // (SUI): 再删 docId 对应 word
     }
 }
 

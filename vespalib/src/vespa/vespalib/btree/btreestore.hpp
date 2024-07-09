@@ -442,7 +442,7 @@ applyNew(EntryRef &ref,
     assert(!ref.valid());
     size_t additionSize(ae - a);
     uint32_t clusterSize = additionSize;
-    if (clusterSize <= clusterLimit) {
+    if (clusterSize <= clusterLimit) { // (SUI): size < 8 用 array
         applyNewArray(ref, a, ae);
     } else {
         applyNewTree(ref, a, ae, comp);

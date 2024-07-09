@@ -27,7 +27,7 @@ FeatureStore::writeFeatures(uint32_t packedIndex, const DocIdAndFeatures &featur
         oldOffset = 0;
         assert(_f.getWriteOffset() == oldOffset);
     }
-    assert(!features.has_raw_data());
+    assert(!features.has_raw_data());  // (SUI): 没有 raw_data, 这个 raw_data 是啥？
     _f.writeFeatures(features);
     return oldOffset;
 }

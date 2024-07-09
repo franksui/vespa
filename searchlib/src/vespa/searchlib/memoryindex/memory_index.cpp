@@ -111,6 +111,7 @@ MemoryIndex::removeDocuments(LidVector lids)
     inverter.removeDocuments(std::move(lids));
 }
 
+// (SUI): 提交, 把 document 的操作刷到 memory index
 void
 MemoryIndex::commit(OnWriteDoneType on_write_done)
 {

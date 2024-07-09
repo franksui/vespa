@@ -158,7 +158,7 @@ public:
      * Apply multiple changes at once.
      *
      * additions and removals should be sorted on key without duplicates.
-     * Overlap between additions and removals indicates updates.
+     * Overlap between additions and removals indicates updates. // (SUI): 重叠的 doc 表示 update
      */
     void apply(EntryRef &ref, AddIter a, AddIter ae, RemoveIter r, RemoveIter re, CompareT comp = CompareT());
 

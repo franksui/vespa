@@ -27,7 +27,7 @@ public:
 
     private:
         uint32_t   _docId;
-        WordRefVector _words;
+        WordRefVector _words; // (SUI): docId 对应的所有 word 的 wordRef
 
     public:
         Builder(uint32_t docId_);

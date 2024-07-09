@@ -40,9 +40,9 @@ private:
 
     // Pending changes to posting list for (_word)
     std::vector<uint32_t>    _removes;
-    std::vector<PostingListKeyDataType> _adds;
+    std::vector<PostingListKeyDataType> _adds; // (SUI): BTreeKeyData < key: docId, value: featureRef occ field_length >
     using WordEntry = std::tuple<vespalib::stringref, size_t, size_t>;
-    std::vector<WordEntry> _word_entries;
+    std::vector<WordEntry> _word_entries; // (SUI): word 对应的 _adds 和 _removes 区间大小
     size_t _removes_offset;
     size_t _adds_offset;
 

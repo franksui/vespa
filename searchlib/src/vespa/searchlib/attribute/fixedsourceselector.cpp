@@ -101,7 +101,7 @@ void FixedSourceSelector::reserve(uint32_t numDocs)
         _source.set(i, getDefaultSource());
     }
 }
-
+// (SUI): 把 docId 对应的 source 存在了 AttributeVector 里
 void
 FixedSourceSelector::setSource(uint32_t docId, queryeval::Source source)
 {

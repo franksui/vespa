@@ -26,7 +26,7 @@ void
 DocIdAndPosOccFeatures::addNextOcc(uint32_t elementId, uint32_t wordPos, int32_t elementWeight, uint32_t elementLen)
 {
     assert(wordPos < elementLen);
-    if (_elements.empty() || elementId > _elements.back().getElementId()) {
+    if (_elements.empty() || elementId > _elements.back().getElementId()) { // (SUI): 新 element
         _elements.emplace_back(elementId, elementWeight, elementLen);
     } else {
         assert(elementId == _elements.back().getElementId());
@@ -35,8 +35,8 @@ DocIdAndPosOccFeatures::addNextOcc(uint32_t elementId, uint32_t wordPos, int32_t
     }
     assert(_elements.back().getNumOccs() == 0 ||
            wordPos > _word_positions.back().getWordPos());
-    _elements.back().incNumOccs();
-    _word_positions.emplace_back(wordPos);
+    _elements.back().incNumOccs(); // (SUI): elemId elemWeight elemLen NumOcc
+    _word_positions.emplace_back(wordPos); // (SUI): word pos
 }
 
 }
