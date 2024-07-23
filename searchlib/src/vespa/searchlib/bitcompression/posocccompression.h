@@ -134,7 +134,7 @@ public:
     void getParams(PostingListParams &params) const override;
 };
 
-
+// (SUI): write posocc
 template <bool bigEndian>
 class EG2PosOccEncodeContext : public FeatureEncodeContext<bigEndian>
 {

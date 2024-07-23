@@ -358,7 +358,7 @@ IndexMaintainer::flushMemoryIndex(IMemoryIndex &memoryIndex,
                                   FixedSourceSelector::SaveInfo &saveInfo)
 {
     // Called by a flush worker thread
-    const string flushDir = getFlushDir(indexId);
+    const string flushDir = getFlushDir(indexId); // (SUI): ${base_dir}/index.flush.${indexId}
     memoryIndex.flushToDisk(flushDir, docIdLimit, serialNum);
     auto prunedSchema(memoryIndex.getPrunedSchema());
     if (prunedSchema) {
@@ -942,6 +942,7 @@ IndexMaintainer::~IndexMaintainer()
     _selector.reset();
 }
 
+// (SUI): 哪里调用的？
 std::unique_ptr<FlushTask>
 IndexMaintainer::initFlush(SerialNum serialNum, searchcorespi::FlushStats * stats)
 {

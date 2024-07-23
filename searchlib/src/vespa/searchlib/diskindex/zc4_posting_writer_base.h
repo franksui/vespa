@@ -21,9 +21,9 @@ class Zc4PostingWriterBase
 public:
     struct DocIdAndFeatureSize {
         uint32_t _doc_id;
-        uint32_t _field_length;
+        uint32_t _field_length; // (SUI): field_length 是 field 的总的 item 的个数
         uint32_t _num_occs;
-        uint32_t _features_size;
+        uint32_t _features_size; // (SUI): bit length
         DocIdAndFeatureSize(uint32_t doc_id, uint32_t field_length, uint32_t num_occs, uint32_t features_size) noexcept
             : _doc_id(doc_id),
               _field_length(field_length),

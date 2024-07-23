@@ -52,7 +52,7 @@ public:
     PostingListCountFileEncodeContext()
         : ParentClass(),
           _avgBitsPerDoc(10),
-          _minChunkDocs(262144),
+          _minChunkDocs(262144), // (SUI): 这玩意到底是多少？ 有 1<<30, 还有这个
           _docIdLimit(10000000),
           _numWordIds(0)
     {

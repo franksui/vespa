@@ -44,7 +44,7 @@ AllocatedBitVector::AllocatedBitVector(Index numberOfElements) :
     _alloc(allocatePaddedAndAligned(numberOfElements))
 {
     _capacityBits = computeCapacity(_capacityBits, _alloc.size());
-    init(_alloc.get(), 0, numberOfElements);
+    init(_alloc.get(), 0, numberOfElements); // (SUI): 给 BitVector 分配 _words
     clear();
 }
 

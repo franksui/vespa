@@ -56,7 +56,7 @@ public:
             ret = 16;
         }
         if (ret > docIdLimit) {
-            ret = docIdLimit;
+            ret = docIdLimit;  // (SUI): 什么时候会大？
         }
         return ret;
     }

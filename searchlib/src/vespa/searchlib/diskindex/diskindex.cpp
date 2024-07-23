@@ -77,6 +77,7 @@ DiskIndex::loadSchema()
     return true;
 }
 
+// (SUI): dict open 
 bool
 DiskIndex::openDictionaries(const TuneFileSearch &tuneFileSearch)
 {

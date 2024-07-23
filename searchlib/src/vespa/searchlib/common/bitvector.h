@@ -147,6 +147,7 @@ public:
         vespalib::atomic::store_ref_release(_sz, sz);
     }
     void set_bit_no_range_check(Index idx) noexcept {
+        // (SUI): _words[idx/64] = _words[idx/64] | (1 << (idx%64))
         store_unchecked(_words[wordNum(idx)], _words[wordNum(idx)] | mask(idx));
     }
     void clear_bit_no_range_check(Index idx) noexcept {

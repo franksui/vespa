@@ -95,11 +95,11 @@ FieldWriter::open(uint32_t minSkipDocs,
 void
 FieldWriter::flush()
 {
-    _posoccfile->flushWord();
+    _posoccfile->flushWord(); // (SUI): 刷上一个 word
     PostingListCounts &counts = _posoccfile->getCounts();
-    if (counts._numDocs != 0) {
+    if (counts._numDocs != 0) { // (SUI): 有 doc
         assert(_compactWordNum != 0);
-        _dictFile->writeWord(_word, counts);
+        _dictFile->writeWord(_word, counts); // (SUI): dict 
         // Write bitmap entries
         if (_bvc.getCrossedBitVectorLimit()) {
             _bmapfile.addWordSingle(_compactWordNum, _bvc.getBitVector());

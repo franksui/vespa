@@ -51,7 +51,7 @@ private:
     std::vector<uint32_t, vespalib::allocator_large<uint32_t>> _array;
     BitVector::UP  _bv;
     uint64_t       _numDocs;
-    const uint32_t _bitVectorLimit;
+    const uint32_t _bitVectorLimit;  // (SUI): 16 或者 (docIdLimit+63)/64
 
 
 public:

@@ -34,7 +34,7 @@ MemoryIndexWrapper::MemoryIndexWrapper(const search::index::Schema& schema,
 void
 MemoryIndexWrapper::flushToDisk(const vespalib::string &flushDir, uint32_t docIdLimit, SerialNum serialNum)
 {
-    const uint64_t numWords = _index.getNumWords();
+    const uint64_t numWords = _index.getNumWords(); // (SUI): 有多少个 unique word
     _index.freeze(); // TODO(geirst): is this needed anymore?
     SerialNumFileHeaderContext fileHeaderContext(_fileHeaderContext, serialNum);
     IndexBuilder indexBuilder(_index.getSchema(), flushDir, docIdLimit,

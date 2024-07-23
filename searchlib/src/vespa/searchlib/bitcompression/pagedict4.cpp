@@ -343,7 +343,7 @@ PageDict4SPWriter::flushPage()
     (void) l5Residue;
 
     EC &e = _spe;
-    e.writeBits(_prevL5Size, 15);
+    e.writeBits(_prevL5Size, 15);  // (SUI): 为啥用的是 prev ???? 是把当前的 word 写到了 L6 ssdat 里面了 
     e.writeBits(_prevL4Size, 15);
     e.writeBits(_l3Entries, 15);
     e.writeBits(wordsSize, 12);
@@ -441,6 +441,7 @@ PageDict4SPWriter::addL3Skip(vespalib::stringref word,
      * on each page (possibly overflowing page) is elided, in practice
      * promoted to an L6 entry at SS level.
      */
+    // (SUI): 记住上一个 word 的 size, 把当前的 word 写到 SS 里 L6 上
     _prevL3Size = _l3Size;
     _prevL4Size = _l4Size;
     _prevL5Size = _l5Size;
@@ -465,7 +466,7 @@ PageDict4SPWriter::addL3Skip(vespalib::stringref word,
     _l3WordNum = wordNum;
     ++_l3Entries;
     ++_l4StrideCheck;
-    if (_l4StrideCheck >= getL4SkipStride()) {
+    if (_l4StrideCheck >= getL4SkipStride()) { // (SUI): 16
         addL4Skip(lcp);
     }
     addLCPWord(word, lcp, _words);
@@ -646,7 +647,7 @@ PageDict4PWriter::flushPage()
     assert(_countsEntries < (1u << 15));
     assert(_countsWordOffset < (1u << 12));
 
-    uint32_t l1Residue = getL1Entries(_countsEntries);
+    uint32_t l1Residue = getL1Entries(_countsEntries); // (SUI): (_countsEntries - 1) / 16
     uint32_t l2Residue = getL2Entries(l1Residue);
 
     assert((l1Residue == 0) == (_l1Size == 0));
@@ -739,8 +740,8 @@ void
 PageDict4PWriter::addCounts(vespalib::stringref word, const Counts &counts)
 {
     assert(_countsWordOffset == _words.size());
-    size_t lcp = getLCP(_pendingCountsWord, _countsWord);
-    if (_l1StrideCheck >= getL1SkipStride()) {
+    size_t lcp = getLCP(_pendingCountsWord, _countsWord); // (SUI): longest common prefix; lcp 限制小于 254
+    if (_l1StrideCheck >= getL1SkipStride()) { // (SUI): 16, 每 16 个 word 加一个 L1Skip, 是用的上一个 word, 还没写到 _words 里
         addL1Skip(lcp);
     }
     if (_countsEntries > 0) {
@@ -748,9 +749,10 @@ PageDict4PWriter::addCounts(vespalib::stringref word, const Counts &counts)
     }
     _eCounts.writeCounts(counts);
     uint32_t eCountsOffset = static_cast<uint32_t>(_eCounts.getWriteOffset());
+    // (SUI): _ecountsWordOffset 表示 ）_words 的长度
     if (eCountsOffset + _l1Size + _l2Size + _headerSize +
         8 * (_countsWordOffset + 2 + _pendingCountsWord.size() - lcp) >
-        getPageBitSize()) {
+        getPageBitSize()) {  // (SUI): 4096 * 8, 大于一页的大小就分页
         if (_l1StrideCheck == 0u) {
             _l1Size = _prevL1Size;  // Undo L1
             _l2Size = _prevL2Size;  // Undo L2
@@ -765,7 +767,7 @@ PageDict4PWriter::addCounts(vespalib::stringref word, const Counts &counts)
             _eCounts.writeCounts(counts);
             eCountsOffset = static_cast<uint32_t>(_eCounts.getWriteOffset());
         }
-        if (eCountsOffset + _headerSize > getPageBitSize()) {
+        if (eCountsOffset + _headerSize > getPageBitSize()) { // (SUI): 这个是 ecounts 太长了？
             // overflow page.
             addOverflowCounts(word, counts);
             _spWriter.addOverflowCounts(word, counts, _countsStartOffset,
@@ -834,6 +836,7 @@ PageDict4PWriter::addL1Skip(size_t &lcp)
         lcp = tlcp;
     }
     _l1StrideCheck = 0u;
+    // (SUI): _countsWordOffset 是 word 加到 _words 之前的 offset, 跟下面的配合方便读的时候直接找下一个 word
     _eL1.encodeExpGolomb(_countsWordOffset - _l1WordOffset,
                          K_VALUE_COUNTFILE_L1_WORDOFFSET);
     _eL1.writeComprBufferIfNeeded();
@@ -852,6 +855,7 @@ PageDict4PWriter::addL1Skip(size_t &lcp)
     if (_l2StrideCheck >= getL2SkipStride()) {
         addL2Skip(lcp);
     }
+    // (SUI): word 加到 _words 之后的 offset
     _l1WordOffset = _countsWordOffset + 2 + _pendingCountsWord.size() - lcp;
 }
 
@@ -976,18 +980,20 @@ PageDict4SSReader::setup(DC &ssd)
         uint64_t val64;
         const bool bigEndian = true;
         UC64_DECODECONTEXT_LOAD(o, dL6._);
-        overflow = ((oVal & TOP_BIT64) != 0);
+        overflow = ((oVal & TOP_BIT64) != 0); // (SUI): 因为写的时候只写了 1 个 bit
         oVal <<= 1;
         length = 1;
         UC64_READBITS_NS(o, EC);
         UC64_DECODECONTEXT_STORE(o, dL6._);
 
+        // (SUI): 注释有问题？ each 8th
         /*
          * L7 entry for each 16th L6 entry and right before and after any
          * overflow entry.
          */
-        if (l7StrideCheck >= getL7SkipStride() ||
+        if (l7StrideCheck >= getL7SkipStride() ||     // (SUI): 8
             (l7StrideCheck > 0 && (overflow || forceL7Entry))) {
+            // (SUI): overflow 的时候不更新 l7Ref, 还是指到前一个非 overflow 的节点
             // Don't update l7Ref if this L7 entry points to an overflow entry
             if (!forceL7Entry) {
                 l7Ref = _l7.size(); // Self-ref if referencing L6 entry
@@ -1011,10 +1017,10 @@ PageDict4SSReader::setup(DC &ssd)
         ++bytes;
         assert(lcp <= word.size());
         word.resize(lcp);
-        word += reinterpret_cast<const char *>(bytes);
+        word += reinterpret_cast<const char *>(bytes); // (SUI): 当前的 word
         dL6.setByteCompr(bytes + word.size() + 1 - lcp);
         if (overflow) {
-            _overflows.push_back(OverflowRef(l6WordNum - 1, _l7.size()));
+            _overflows.push_back(OverflowRef(l6WordNum - 1, _l7.size())); // wordNo word 在 L7 的 index
             dL6.readCounts(counts);
             startOffset.adjust(counts);
             forceL7Entry = true; // Add new L7 entry as soon as possible
@@ -1132,7 +1138,7 @@ lookup(vespalib::stringref key)
         if (overflow) {
             bool l6NotLessThanKey = !(word < key);
             if (l6NotLessThanKey) {
-                if (key == word) {
+                if (key == word) {  // (SUI): 只有相等的时候才会置 overflow = true
                     dL6.readCounts(counts);
                     res._overflow = true;
                     res._counts = counts;
@@ -1144,9 +1150,10 @@ lookup(vespalib::stringref key)
             LOG_ABORT("FATAL: Missing L7 entry for overflow entry"); // counts < key, should not happen (missing L7 entry)
         } else {
             bool l6NotLessThanKey = !(word < key);
-            if (l6NotLessThanKey) {
+            if (l6NotLessThanKey) {  // (SUI): >=
                 break;  // key <= counts
             }
+            // (SUI): 这里是找到 word < key 相关的 startOffset / pageNum / word
             UC64_DECODECONTEXT_LOAD(o, dL6._);
             UC64_DECODEEXPGOLOMB_NS(o, K_VALUE_COUNTFILE_L6_PAGENUM, EC);
             pageNum += val64;
@@ -1159,11 +1166,11 @@ lookup(vespalib::stringref key)
         l6Offset = dL6.getReadOffset();
     }
     assert(l6Offset <= _ssFileBitLen);
-    res._l6Word = l6Word;
+    res._l6Word = l6Word; // (SUI): l6Word 是小于 key 的
     if (l6Offset >= _ssFileBitLen) {
-        res._lastWord.clear();  // Mark that word is beyond end of dictionary
+        res._lastWord.clear();  // Mark that word is beyond end of dictionary (SUI): 没找到, 清掉
     } else {
-        res._lastWord = word;
+        res._lastWord = word; // (SUI): 检查的最后一个 word, 是大于等于 key 的, 跟 l6Word 一起形成一个范围
     }
     res._l6StartOffset = l6StartOffset;
     res._pageNum = pageNum;
@@ -1271,7 +1278,7 @@ PageDict4SPLookupRes()
 
 PageDict4SPLookupRes::~PageDict4SPLookupRes() = default;
 
-
+// (SUI): 好 TM 的复杂, 直接 hash(word) 再 hashtable 不好么？
 void
 PageDict4SPLookupRes::
 lookup(const SSReader &ssReader,
@@ -1302,11 +1309,11 @@ lookup(const SSReader &ssReader,
     uint32_t l4Size = dL5.readBits(15);
     uint32_t l3Entries = dL5.readBits(15);
     uint32_t wordsSize = dL5.readBits(12);
-    uint32_t l3Residue = l3Entries;
+    uint32_t l3Residue = l3Entries; // (SUI): 也是 pdat 的页数, 每个 L3Word 对应 pdat 中的一页
 
     assert(l3Entries > 0);
-    uint32_t l4Residue = getL4Entries(l3Entries);
-    uint32_t l5Residue = getL5Entries(l4Residue);
+    uint32_t l4Residue = getL4Entries(l3Entries);  // (SUI): (l3Entries - 1)/16
+    uint32_t l5Residue = getL5Entries(l4Residue);  // (SUI): l4Residue/8
 
     assert((l4Residue == 0) == (l4Size == 0));
     assert((l5Residue == 0) == (l5Size == 0));
@@ -1317,7 +1324,7 @@ lookup(const SSReader &ssReader,
 
     assert(l5Offset == dL5.getReadOffset());
 
-    uint32_t wordOffset = getPageByteSize() - wordsSize;
+    uint32_t wordOffset = getPageByteSize() - wordsSize; // (SUI): words 的 offset
     const char *wordBuf = static_cast<const char *>(sparsePage) + wordOffset;
 
     _l3Word = l6Word;
@@ -1327,7 +1334,7 @@ lookup(const SSReader &ssReader,
     uint32_t l5WordOffset = l3WordOffset;
     uint64_t l3WordNum = l6WordNum;
 
-    while (l5Residue > 0) {
+    while (l5Residue > 0) { // (SUI): 有 L5Skip
         UC64_DECODECONTEXT(o);
         uint32_t length;
         uint64_t val64;
@@ -1368,7 +1375,7 @@ lookup(const SSReader &ssReader,
     }
     setDecoderPositionInPage(dL4, sparsePage, l4Offset);
     uint32_t l4WordOffset = l3WordOffset;
-    while (l4Residue > 0) {
+    while (l4Residue > 0) { // (SUI): 有 L4Skip
         UC64_DECODECONTEXT(o);
         uint32_t length;
         uint64_t val64;
@@ -1443,7 +1450,7 @@ lookup(const SSReader &ssReader,
         l3WordNum += val64;
         --l3Residue;
     }
-    _lastWord = word;
+    _lastWord = word;  // （SUI): 跟 l3Word 形成一个范围
     _pageNum = lowestPageNum + l3Entries - l3Residue;
     _l3WordNum = l3WordNum;
     // Lookup succeded if not run to end of L3 info.

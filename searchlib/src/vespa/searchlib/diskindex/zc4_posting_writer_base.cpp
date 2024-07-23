@@ -36,7 +36,7 @@ public:
 
 class L1SkipEncoder : public DocIdEncoder {
 protected:
-    uint32_t _stride_check;
+    uint32_t _stride_check; // (SUI): 步伐, 记录当前第几个 doc 了
     uint32_t _l1_skip_pos;
     const bool _encode_features;
 
@@ -200,7 +200,7 @@ L4SkipEncoder::write_skip(ZcBuf &zc_buf, const L3SkipEncoder &l3_skip)
 }
 
 Zc4PostingWriterBase::Zc4PostingWriterBase(PostingListCounts &counts)
-    : _minChunkDocs(1 << 30),
+    : _minChunkDocs(1 << 30), // (SUI): 这么大？？ 1,073,741,824
       _minSkipDocs(64),
       _docIdLimit(10000000),
       _docIds(),
@@ -242,7 +242,7 @@ Zc4PostingWriterBase::calc_skip_info(bool encode_features)
     L2SkipEncoder l2_skip_encoder(encode_features);
     L3SkipEncoder l3_skip_encoder(encode_features);
     L4SkipEncoder l4_skip_encoder(encode_features);
-    l1_skip_encoder.dec_stride_check();
+    l1_skip_encoder.dec_stride_check(); // (SUI): 先减了个一, 变成最大整数了
     if (!_counts._segments.empty()) {
         uint32_t doc_id = _counts._segments.back()._lastDoc;
         doc_id_encoder.set_doc_id(doc_id);
@@ -252,13 +252,13 @@ Zc4PostingWriterBase::calc_skip_info(bool encode_features)
         l4_skip_encoder.set_doc_id(doc_id);
     }
     for (const auto &doc_id_and_feature_size : _docIds) {
-        if (l1_skip_encoder.should_write_skip(L1SKIPSTRIDE)) {
+        if (l1_skip_encoder.should_write_skip(L1SKIPSTRIDE)) {  // (SUI): 16
             l1_skip_encoder.write_skip(_l1Skip, doc_id_encoder);
-            if (l2_skip_encoder.should_write_skip(L2SKIPSTRIDE)) {
+            if (l2_skip_encoder.should_write_skip(L2SKIPSTRIDE)) {  // (SUI): 8
                 l2_skip_encoder.write_skip(_l2Skip, l1_skip_encoder);
-                if (l3_skip_encoder.should_write_skip(L3SKIPSTRIDE)) {
+                if (l3_skip_encoder.should_write_skip(L3SKIPSTRIDE)) { // (SUI): 8
                     l3_skip_encoder.write_skip(_l3Skip, l2_skip_encoder);
-                    if (l4_skip_encoder.should_write_skip(L4SKIPSTRIDE)) {
+                    if (l4_skip_encoder.should_write_skip(L4SKIPSTRIDE)) { // (SUI): 8
                         l4_skip_encoder.write_skip(_l4Skip, l3_skip_encoder);
                     }
                 }

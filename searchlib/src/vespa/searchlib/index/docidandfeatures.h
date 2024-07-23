@@ -95,7 +95,7 @@ public:
 
 protected:
     uint32_t _doc_id; // Current document id
-    uint32_t _field_length;
+    uint32_t _field_length; // (SUI): field 里 word 的数量
     uint32_t _num_occs;
     std::vector<WordDocElementFeatures> _elements;
     std::vector<WordDocElementWordPosFeatures> _word_positions;

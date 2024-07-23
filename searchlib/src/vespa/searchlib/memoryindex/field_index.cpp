@@ -158,7 +158,7 @@ FieldIndex<interleaved_features>::dump(search::index::FieldIndexBuilder & indexB
     FeatureStore::DecodeContextCooked decoder(nullptr);
     DocIdAndFeatures features;
     vespalib::Array<uint32_t> wordMap(_numUniqueWords + 1, 0);
-    _featureStore.setupForField(_fieldId, decoder);
+    _featureStore.setupForField(_fieldId, decoder); // (SUI): setup decoder
     for (auto itr = _dict.begin(); itr.valid(); ++itr) {
         const WordKey & wk = itr.getKey();
         typename PostingListStore::RefType plist(itr.getData().load_relaxed());
@@ -168,7 +168,7 @@ FieldIndex<interleaved_features>::dump(search::index::FieldIndexBuilder & indexB
         }
         indexBuilder.startWord(word);
         uint32_t clusterSize = _postingListStore.getClusterSize(plist);
-        if (clusterSize == 0) {
+        if (clusterSize == 0) {  // (SUI): tree
             const PostingList *tree = _postingListStore.getTreeEntry(plist);
             auto pitr = tree->begin(_postingListStore.getAllocator());
             assert(pitr.valid());
@@ -181,7 +181,7 @@ FieldIndex<interleaved_features>::dump(search::index::FieldIndexBuilder & indexB
                 decoder.readFeatures(features);
                 indexBuilder.add_document(features);
             }
-        } else {
+        } else { // (SUI): array
             const PostingListKeyDataType *kd =
                 _postingListStore.getKeyDataEntry(plist, clusterSize);
             const PostingListKeyDataType *kde = kd + clusterSize;

@@ -22,7 +22,7 @@ public:
      * list for a word is less than 256 kB then it is not split into
      * segments.
      */
-    class Segment
+    class Segment // (SUI): skipList
     {
     public:
         uint64_t _bitLength; // Length of segment
@@ -56,7 +56,7 @@ public:
      * segments.  If there are more than one segments for a word then the
      * last segment has skip info even if it has fewer than 64 documents.
      */
-    std::vector<Segment> _segments;
+    std::vector<Segment> _segments;  // (SUI):
 
     PostingListCounts() noexcept
         : _numDocs(0),

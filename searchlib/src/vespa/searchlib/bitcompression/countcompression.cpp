@@ -109,7 +109,7 @@ writeCounts(const PostingListCounts &counts)
            counts._numDocs >= _minChunkDocs);
     uint32_t numDocs = counts._numDocs;
     assert(numDocs > 0);
-    encodeExpGolomb(numDocs - 1, K_VALUE_COUNTFILE_SPNUMDOCS);
+    encodeExpGolomb(numDocs - 1, K_VALUE_COUNTFILE_SPNUMDOCS); // (SUI): doc num
     if (numDocs == 0) {
         if (__builtin_expect(_valI >= _valE, false)) {
             _writeContext->writeComprBuffer(false);
@@ -119,10 +119,10 @@ writeCounts(const PostingListCounts &counts)
     uint64_t encodeVal = counts._bitLength;
     uint64_t expVal = numDocs * static_cast<uint64_t>(_avgBitsPerDoc);
     uint32_t kVal = (expVal < 4) ? 1 : asmlog2(expVal);
-    encodeExpGolomb(encodeVal, kVal);
+    encodeExpGolomb(encodeVal, kVal); // (SUI): bitLength 应该是 posocc 中的长度
     uint32_t numChunks = counts._segments.size();
-    if (numDocs >= _minChunkDocs) {
-        encodeExpGolomb(numChunks, K_VALUE_COUNTFILE_NUMCHUNKS);
+    if (numDocs >= _minChunkDocs) { // (SUI): 感觉这个 _minChunkDocs 是 segment doc 数量的限制
+        encodeExpGolomb(numChunks, K_VALUE_COUNTFILE_NUMCHUNKS);  // (SUI): segment num
     }
     if (numChunks != 0) {
         using segit = std::vector<PostingListCounts::Segment>::const_iterator;
@@ -135,10 +135,10 @@ writeCounts(const PostingListCounts &counts)
                 _writeContext->writeComprBuffer(false);
             }
             encodeExpGolomb(it->_numDocs - 1,
-                            K_VALUE_COUNTFILE_CHUNKNUMDOCS);
+                            K_VALUE_COUNTFILE_CHUNKNUMDOCS); // (SUI): segment doc num
             encodeExpGolomb(it->_bitLength,
-                            K_VALUE_COUNTFILE_POSOCCBITS);
-            encodeExpGolomb(it->_lastDoc - prevLastDoc - it->_numDocs,
+                            K_VALUE_COUNTFILE_POSOCCBITS); // (SUI): segment doc length
+            encodeExpGolomb(it->_lastDoc - prevLastDoc - it->_numDocs,  // (SUI): last doc id
                             K_VALUE_COUNTFILE_LASTDOCID);
             prevLastDoc = it->_lastDoc;
         }

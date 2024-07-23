@@ -232,13 +232,13 @@ Zc4PostingSeqWrite::makeHeader(const FileHeaderContext &fileHeaderContext)
     fileHeaderContext.addTags(header, _file.GetFileName());
     header.putTag(Tag("frozen", 0));
     header.putTag(Tag("fileBitSize", 0));
-    header.putTag(Tag("format.0", myId));
+    header.putTag(Tag("format.0", myId)); // (SUI): 表示是否 dynamic K, Zc.5 是 dynamic_k, Zc.4 不是
     header.putTag(Tag("format.1", f.getIdentifier()));
     header.putTag(Tag("interleaved_features", _writer.get_encode_interleaved_features() ? 1 : 0));
     header.putTag(Tag("numWords", 0));
-    header.putTag(Tag("minChunkDocs", _writer.get_min_chunk_docs()));
+    header.putTag(Tag("minChunkDocs", _writer.get_min_chunk_docs())); // _minChunkDocs(1 << 30)
     header.putTag(Tag("docIdLimit", _writer.get_docid_limit()));
-    header.putTag(Tag("minSkipDocs", _writer.get_min_skip_docs()));
+    header.putTag(Tag("minSkipDocs", _writer.get_min_skip_docs())); //  _minSkipDocs(64)
     header.putTag(Tag("endian", "big"));
     header.putTag(Tag("desc", "Posting list file"));
 

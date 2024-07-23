@@ -55,7 +55,7 @@ Zc4PostingWriter<bigEndian>::flush_word_with_skip(bool hasMore)
 
     calc_skip_info(_encode_features != nullptr);
 
-    uint32_t docIdsSize = _zcDocIds.size();
+    uint32_t docIdsSize = _zcDocIds.size(); // (SUI): bit size
     uint32_t l1SkipSize = _l1Skip.size();
     uint32_t l2SkipSize = _l2Skip.size();
     uint32_t l3SkipSize = _l3Skip.size();
@@ -218,7 +218,7 @@ Zc4PostingWriter<bigEndian>::flush_word()
     EncodeContext &e = _encode_context;
     uint64_t writePos = e.getWriteOffset();
 
-    _counts._bitLength = writePos - _writePos;
+    _counts._bitLength = writePos - _writePos;   // (SUI): posocc 中的长度
     _writePos = writePos;
 }
 

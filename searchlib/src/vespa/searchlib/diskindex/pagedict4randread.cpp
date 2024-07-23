@@ -142,14 +142,14 @@ PageDict4RandRead::readPHeader()
     _pHeaderLen = headerLen;
 }
 
-
+// (SUI): look up postingList for word
 bool
 PageDict4RandRead::lookup(vespalib::stringref word,
                           uint64_t &wordNum,
                           PostingListOffsetAndCounts &offsetAndCounts)
 {
-    SSLookupRes ssRes(_ssReader->lookup(word));
-    if (!ssRes._res) {
+    SSLookupRes ssRes(_ssReader->lookup(word)); // (SUI): 先从 ssdat 里找
+    if (!ssRes._res) {  // (SUI): 没找到
         offsetAndCounts._offset = ssRes._l6StartOffset._fileOffset;
         offsetAndCounts._accNumDocs = ssRes._l6StartOffset._accNumDocs;
         wordNum = ssRes._l6WordNum; // XXX ?
@@ -168,7 +168,7 @@ PageDict4RandRead::lookup(vespalib::stringref word,
         size_t pageSize = PageDict4PageParams::getPageByteSize();
         const char *spData = static_cast<const char *>(_spfile->MemoryMapPtr(0));
         spRes.lookup(*_ssReader,
-                     spData + pageSize * ssRes._sparsePageNum,
+                     spData + pageSize * ssRes._sparsePageNum, // (SUI): 定位到页
                      word,
                      ssRes._l6Word,
                      ssRes._lastWord,
@@ -271,7 +271,7 @@ PageDict4RandRead::open(const vespalib::string &name,
 
     _ssReader = std::make_unique<SSReader>(_ssReadContext, _ssHeaderLen, _ssFileBitSize, _spHeaderLen,
                                            _spFileBitSize, _pHeaderLen, _pFileBitSize);
-    _ssReader->setup(_ssd);
+    _ssReader->setup(_ssd);  // (SUI): 建 L7Skip
 
     return true;
 }
