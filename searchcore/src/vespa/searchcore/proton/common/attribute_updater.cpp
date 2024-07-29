@@ -499,6 +499,7 @@ AttributeUpdater::updateValue(PredicateAttribute &vec, uint32_t lid, const Field
     vec.updateValue(lid, static_cast<const PredicateFieldValue &>(val));
 }
 
+// (SUI): tensor add
 void
 AttributeUpdater::updateValue(TensorAttribute &vec, uint32_t lid, const FieldValue &val)
 {

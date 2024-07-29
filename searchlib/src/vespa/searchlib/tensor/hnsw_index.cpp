@@ -248,12 +248,13 @@ HnswIndex<type>::select_neighbors_heuristic(const HnswCandidateVectorT& neighbor
     return result;
 }
 
+// (SUI): 按照距离选最近的 max_links 个节点作为 used
 template <HnswIndexType type>
 template <typename HnswCandidateVectorT>
 SelectResult
 HnswIndex<type>::select_neighbors(const HnswCandidateVectorT& neighbors, uint32_t max_links) const
 {
-    if (_cfg.heuristic_select_neighbors()) {
+    if (_cfg.heuristic_select_neighbors()) {  // (SUI): 这个看到的都是 false, 启发法。。
         return select_neighbors_heuristic(neighbors, max_links);
     } else {
         return select_neighbors_simple(neighbors, max_links);
@@ -266,7 +267,7 @@ HnswIndex<type>::shrink_if_needed(uint32_t nodeid, uint32_t level)
 {
     auto old_links = _graph.get_link_array(nodeid, level);
     uint32_t max_links = max_links_for_level(level);
-    if (old_links.size() > max_links) {
+    if (old_links.size() > max_links) {  // (SUI): link 大于 max, 就减一些
         HnswTraversalCandidateVector neighbors;
         neighbors.reserve(old_links.size());
         auto df = _distance_ff->for_insertion_vector(get_vector(nodeid));
@@ -291,10 +292,10 @@ template <HnswIndexType type>
 void
 HnswIndex<type>::connect_new_node(uint32_t nodeid, const LinkArrayRef &neighbors, uint32_t level)
 {
-    _graph.set_link_array(nodeid, level, neighbors);
+    _graph.set_link_array(nodeid, level, neighbors); // (SUI): 设置 nodeid 的 link
     for (uint32_t neighbor_nodeid : neighbors) {
         auto old_links = _graph.get_link_array(neighbor_nodeid, level);
-        add_link_to(neighbor_nodeid, level, old_links, nodeid);
+        add_link_to(neighbor_nodeid, level, old_links, nodeid); // (SUI): 把 nodeid 设到 neighbor 的 link 上
     }
     for (uint32_t neighbor_nodeid : neighbors) {
         shrink_if_needed(neighbor_nodeid, level);
@@ -381,6 +382,7 @@ HnswIndex<type>::find_nearest_in_layer(
     bool keep_searching = true;
     while (keep_searching) {
         keep_searching = false;
+        // (SUI): 遍历 nearest 节点的所有连接点找是否有距离更小的节点，如果有则将该节点替换成为 nearest 继续找
         for (uint32_t neighbor_nodeid : _graph.get_link_array(nearest.levels_ref, level)) {
             auto& neighbor_node = _graph.acquire_node(neighbor_nodeid);
             auto neighbor_ref = neighbor_node.levels_ref().load_acquire();
@@ -408,16 +410,17 @@ HnswIndex<type>::search_layer_helper(
         uint32_t nodeid_limit, const vespalib::Doom* const doom,
         uint32_t estimated_visited_nodes) const
 {
-    NearestPriQ candidates;
+    NearestPriQ candidates;  // (SUI): 优先队列
     GlobalFilterWrapper<type> filter_wrapper(filter);
     filter_wrapper.clamp_nodeid_limit(nodeid_limit);
-    VisitedTracker visited(nodeid_limit, estimated_visited_nodes);
+    VisitedTracker visited(nodeid_limit, estimated_visited_nodes);  // (SUI): 记录访问过的 id
     if (doom != nullptr && doom->soft_doom()) {
         while (!best_neighbors.empty()) {
             best_neighbors.pop();
         }
         return;
     }
+    // (SUI): 最大的 level 进来的时候只有一个 entry
     for (const auto &entry : best_neighbors.peek()) {
         if (entry.nodeid >= nodeid_limit) {
             continue;
@@ -444,16 +447,17 @@ HnswIndex<type>::search_layer_helper(
             auto& neighbor_node = _graph.acquire_node(neighbor_nodeid);
             auto neighbor_ref = neighbor_node.levels_ref().load_acquire();
             if ((! neighbor_ref.valid())
-                || ! visited.try_mark(neighbor_nodeid))
+                || ! visited.try_mark(neighbor_nodeid)) // (SUI): 判断是否有效和是否已经 visited
             {
                 continue;
             }
             uint32_t neighbor_docid = acquire_docid(neighbor_node, neighbor_nodeid);
             uint32_t neighbor_subspace = neighbor_node.acquire_subspace();
             double dist_to_input = calc_distance(df, neighbor_docid, neighbor_subspace);
-            if (dist_to_input < limit_dist) {
+            if (dist_to_input < limit_dist) {  // (SUI): 距离小于 limit_dist, 加入候选 candidates 里
                 candidates.emplace(neighbor_nodeid, neighbor_ref, dist_to_input);
                 if (filter_wrapper.check(neighbor_docid)) {
+                    // (SUI): 加入 best_neighbors 里, 如果个数超过了 neighbors_to_find 则弹出最远的节点, 并更新 limit_dist
                     best_neighbors.emplace(neighbor_nodeid, neighbor_docid, neighbor_ref, dist_to_input);
                     while (best_neighbors.size() > neighbors_to_find) {
                         best_neighbors.pop();
@@ -515,10 +519,10 @@ HnswIndex<type>::add_document(uint32_t docid)
     auto input_vectors = get_vectors(docid);
     auto subspaces = input_vectors.subspaces();
     op.nodes.reserve(subspaces);
-    auto nodeids = _id_mapping.allocate_ids(docid, subspaces);
+    auto nodeids = _id_mapping.allocate_ids(docid, subspaces); // (SUI): SINGLE subspaces = 1; nodeid 就是 docid
     assert(nodeids.size() == subspaces);
     for (uint32_t subspace = 0; subspace < subspaces; ++subspace) {
-        auto entry = _graph.get_entry_node();
+        auto entry = _graph.get_entry_node(); // (SUI): 用当前的 node 作为入口
         internal_prepare_add_node(op, input_vectors.cells(subspace), entry);
         internal_complete_add_node(nodeids[subspace], docid, subspace, op.nodes.back());
     }
@@ -542,25 +546,26 @@ template <HnswIndexType type>
 void
 HnswIndex<type>::internal_prepare_add_node(PreparedAddDoc& op, TypedCells input_vector, const typename GraphType::EntryNode& entry) const
 {
-    int node_max_level = std::min(_level_generator->max_level(), max_max_level);
+    int node_max_level = std::min(_level_generator->max_level(), max_max_level); // (SUI): max_max_level: 29
     std::vector<PreparedAddNode::Links> connections(node_max_level + 1);
     if (entry.nodeid == 0) {
         // graph has no entry point
-        op.nodes.emplace_back(std::move(connections));
+        op.nodes.emplace_back(std::move(connections)); // (SUI): 第一个节点直接返回
         return;
     }
-    int search_level = entry.level;
+    int search_level = entry.level;  // (SUI): 这个 level 是最大的 level
     auto df = _distance_ff->for_insertion_vector(input_vector);
     double entry_dist = calc_distance(*df, entry.nodeid);
     uint32_t entry_docid = get_docid(entry.nodeid);
-    // TODO: check if entry nodeid/levels_ref is still valid here
+    // TODO: check if entry nodeid/levels_ref is still valid here  // (SUI): 在这里没检查有效性, 所以下面添加的时候过滤了下？
     HnswCandidate entry_point(entry.nodeid, entry_docid, entry.levels_ref, entry_dist);
+    // (SUI): 找到在 node_max_level 层最近的 entry_point?
     while (search_level > node_max_level) {
         entry_point = find_nearest_in_layer(*df, entry_point, search_level);
         --search_level;
     }
 
-    FurthestPriQ best_neighbors;
+    FurthestPriQ best_neighbors; // (SUI): 降序, 又远到近
     best_neighbors.push(entry_point);
     search_level = std::min(node_max_level, search_level);
     // Find neighbors of the added document in each level it should exist in.
@@ -570,6 +575,7 @@ HnswIndex<type>::internal_prepare_add_node(PreparedAddDoc& op, TypedCells input_
         auto& links = connections[search_level];
         links.reserve(neighbors.used.size());
         for (const auto & neighbor : neighbors.used) {
+            // (SUI): 获取 neighbor 的 levels, 如果 levels 的 size 不大于当前的 search_level 说明 neighbor 没有这一层 level
             auto neighbor_levels = _graph.get_level_array(neighbor.levels_ref);
             if (size_t(search_level) < neighbor_levels.size()) {
                 links.emplace_back(neighbor.nodeid, neighbor.levels_ref);
@@ -620,14 +626,14 @@ template <HnswIndexType type>
 void
 HnswIndex<type>::internal_complete_add_node(uint32_t nodeid, uint32_t docid, uint32_t subspace, PreparedAddNode &prepared_node)
 {
-    int32_t num_levels = prepared_node.connections.size();
+    int32_t num_levels = prepared_node.connections.size(); // (SUI): level
     auto levels_ref = _graph.make_node(nodeid, docid, subspace, num_levels);
     for (int level = 0; level < num_levels; ++level) {
         auto neighbors = filter_valid_nodeids(level, prepared_node.connections[level], nodeid);
         connect_new_node(nodeid, neighbors, level);
     }
     if (num_levels - 1 > get_entry_level()) {
-        _graph.set_entry_node({nodeid, levels_ref, num_levels - 1});
+        _graph.set_entry_node({nodeid, levels_ref, num_levels - 1});   // (SUI): 保证入口的 level 最大
     }
 }
 
@@ -939,7 +945,7 @@ HnswIndex<type>::top_k_by_docid(
 {
     SearchBestNeighbors candidates = top_k_candidates(df, std::max(k, explore_k), filter, doom);
     auto result = candidates.get_neighbors(k, distance_threshold);
-    std::sort(result.begin(), result.end(), NeighborsByDocId());
+    std::sort(result.begin(), result.end(), NeighborsByDocId());  // (SUI): 为什么是按照 docId 排序？
     return result;
 }
 

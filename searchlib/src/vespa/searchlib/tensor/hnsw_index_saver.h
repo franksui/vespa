@@ -30,7 +30,7 @@ private:
         uint32_t entry_nodeid;
         int32_t  entry_level;
         std::vector<EntryRef, vespalib::allocator_large<EntryRef>> refs;
-        std::vector<HnswIndexSaverMetaDataNode<type>, vespalib::allocator_large<HnswIndexSaverMetaDataNode<type>>> nodes;
+        std::vector<HnswIndexSaverMetaDataNode<type>, vespalib::allocator_large<HnswIndexSaverMetaDataNode<type>>> nodes;   // (SUI): SINGLE 记录 refs 里的 offset
         MetaData();
         ~MetaData();
     };

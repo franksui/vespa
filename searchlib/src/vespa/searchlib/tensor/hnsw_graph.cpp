@@ -18,7 +18,7 @@ HnswGraph<type>::HnswGraph()
 {
     nodes.ensure_size(1, NodeType());
     EntryNode entry;
-    set_entry_node(entry);
+    set_entry_node(entry); // (SUI): 初始化 entry_nodeid_and_level id = 0, level = -1
 }
 
 template <HnswIndexType type>
@@ -36,8 +36,8 @@ HnswGraph<type>::make_node(uint32_t nodeid, uint32_t docid, uint32_t subspace, u
     auto levels_ref = levels_store.add(levels);
     auto& node = nodes[nodeid];
     node.levels_ref().store_release(levels_ref);
-    node.store_docid(docid);
-    node.store_subspace(subspace);
+    node.store_docid(docid);  // (SUI): 对 SINGLE 来说 nodeid 就是 docid, 这里没存
+    node.store_subspace(subspace);  // (SUI): 对 SINGLE 来说永远是 1, 所以也没存
     if (nodeid >= nodes_size.load(std::memory_order_relaxed)) {
         nodes_size.store(nodeid + 1, std::memory_order_release);
     }
@@ -79,6 +79,7 @@ HnswGraph<type>::trim_nodes_size()
     nodes_size.store(check_nodeid + 1, std::memory_order_release);
 }
 
+// (SUI): 设置新的 links, 删除旧的
 template <HnswIndexType type>
 void     
 HnswGraph<type>::set_link_array(uint32_t nodeid, uint32_t level, const LinkArrayRef& new_links)

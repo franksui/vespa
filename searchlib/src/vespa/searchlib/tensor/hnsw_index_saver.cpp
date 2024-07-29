@@ -53,13 +53,13 @@ HnswIndexSaver<type>::HnswIndexSaver(const HnswGraph<type> &graph)
     assert (link_array_count <= std::numeric_limits<uint32_t>::max());
     _meta_data.refs.reserve(link_array_count);
     _meta_data.nodes.reserve(num_nodes+1);
-    for (size_t i = 0; i < num_nodes; ++i) {
+    for (size_t i = 0; i < num_nodes; ++i) {  // (SUI): 其实就是从 docid 0 到 docid limit
         auto& node = graph.nodes.get_elem_ref(i);
         _meta_data.nodes.emplace_back(_meta_data.refs.size(), node);
         auto levels_ref = node.levels_ref().load_relaxed();
         if (levels_ref.valid()) {
             auto levels = graph.levels_store.get(levels_ref);
-            for (const auto& links_ref : levels) {
+            for (const auto& links_ref : levels) {  // (SUI): level 0 到 level max
                 _meta_data.refs.push_back(links_ref.load_relaxed());
             }
         }
@@ -71,18 +71,18 @@ template <HnswIndexType type>
 void
 HnswIndexSaver<type>::save(BufferWriter& writer) const
 {
-    writer.write(&_meta_data.entry_nodeid, sizeof(uint32_t));
-    writer.write(&_meta_data.entry_level, sizeof(int32_t));
+    writer.write(&_meta_data.entry_nodeid, sizeof(uint32_t));  // (SUI): entry docid
+    writer.write(&_meta_data.entry_level, sizeof(int32_t));    // (SUI): entry level
     uint32_t num_nodes = _meta_data.nodes.size() - 1;
-    writer.write(&num_nodes, sizeof(uint32_t));
-    for (uint32_t i(0); i < num_nodes; i++) {
+    writer.write(&num_nodes, sizeof(uint32_t));  // (SUI): doc nums
+    for (uint32_t i(0); i < num_nodes; i++) {  // (SUI): 从 docid 0 到 docid limit
         auto& node = _meta_data.nodes[i];
         uint32_t offset = node.get_refs_offset();
         uint32_t next_offset = _meta_data.nodes[i+1].get_refs_offset();
         uint32_t num_levels = next_offset - offset;
-        writer.write(&num_levels, sizeof(uint32_t));
+        writer.write(&num_levels, sizeof(uint32_t));  // (SUI): num_levels
         if (num_levels > 0) {
-            if constexpr (!HnswIndexSaverMetaDataNode<type>::identity_mapping) {
+            if constexpr (!HnswIndexSaverMetaDataNode<type>::identity_mapping) {  // (SUI): MULTI
                 uint32_t docid = node.get_docid();
                 uint32_t subspace = node.get_subspace();
                 writer.write(&docid, sizeof(uint32_t));
@@ -94,11 +94,11 @@ HnswIndexSaver<type>::save(BufferWriter& writer) const
             if (links_ref.valid()) {
                 vespalib::ConstArrayRef<uint32_t> link_array = _graph_links.get(links_ref);
                 uint32_t num_links = link_array.size();
-                writer.write(&num_links, sizeof(uint32_t));
-                writer.write(link_array.cbegin(), sizeof(uint32_t)*num_links);
+                writer.write(&num_links, sizeof(uint32_t)); // (SUI): level links
+                writer.write(link_array.cbegin(), sizeof(uint32_t)*num_links); // (SUI): level links ids
             } else {
                 uint32_t num_links = 0;
-                writer.write(&num_links, sizeof(uint32_t));
+                writer.write(&num_links, sizeof(uint32_t));  // (SUI): level links
             }
         }
     }

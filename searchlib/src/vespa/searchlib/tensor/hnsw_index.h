@@ -43,7 +43,7 @@ namespace search::tensor {
 namespace internal {
 struct PreparedAddNode {
     using Links = std::vector<std::pair<uint32_t, vespalib::datastore::EntryRef>>;
-    std::vector<Links> connections;
+    std::vector<Links> connections; // (SUI): 每层的 links
 
     PreparedAddNode() noexcept;
     explicit PreparedAddNode(std::vector<Links>&& connections_in) noexcept;

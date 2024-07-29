@@ -34,7 +34,7 @@ DefaultNearestNeighborIndexFactory::make(const DocVectorAccess& vectors,
 {
     (void) vector_size;
     uint32_t m = params.max_links_per_node();
-    HnswIndexConfig cfg(m * 2,
+    HnswIndexConfig cfg(m * 2,   // (SUI):  为啥这里乘以了 2 ？
                         m,
                         params.neighbors_to_explore_at_insert(),
                         10000,

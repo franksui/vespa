@@ -367,11 +367,12 @@ TensorAttribute::onInitSave(vespalib::stringref fileName)
          std::move(index_saver));
 }
 
+// (SUI): set tensor
 void
 TensorAttribute::setTensor(DocId docId, const Value& tensor)
 {
     checkTensorType(tensor);
-    internal_set_tensor(docId, tensor);
+    internal_set_tensor(docId, tensor); // (SUI): tensor 放 _tensorStore 里, _refVector 里记下 ref
     if (_index) {
         _index->add_document(docId);
     }

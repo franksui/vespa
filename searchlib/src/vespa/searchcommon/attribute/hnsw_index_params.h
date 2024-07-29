@@ -12,8 +12,8 @@ namespace search::attribute {
  */
 class HnswIndexParams {
 private:
-    uint32_t _max_links_per_node;
-    uint32_t _neighbors_to_explore_at_insert;
+    uint32_t _max_links_per_node;  // (SUI): default is 16
+    uint32_t _neighbors_to_explore_at_insert;  // (SUI): default is 200
     // This is always the same as in the attribute config, and is duplicated here to simplify usage.
     DistanceMetric _distance_metric;
     bool _multi_threaded_indexing;
