@@ -51,7 +51,7 @@ struct HnswGraph {
     LevelArrayStore levels_store;
     LinkArrayStore links_store;
 
-    std::atomic<uint64_t> entry_nodeid_and_level; // (SUI): 低 32 位表示 nodeid, 高 32 位表示 level。作为插入时候的入口节点, 要保证 lelel 是最大的
+    std::atomic<uint64_t> entry_nodeid_and_level; // (SUI): 低 32 位表示 nodeid, 高 32 位表示 level。作为入口节点, 要保证 lelel 是最大的
 
     HnswGraph();
     ~HnswGraph();

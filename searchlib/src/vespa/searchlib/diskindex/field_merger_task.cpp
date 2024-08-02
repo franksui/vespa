@@ -6,6 +6,7 @@
 
 namespace search::diskindex {
 
+// (SUI): field merge
 void
 FieldMergerTask::run()
 {

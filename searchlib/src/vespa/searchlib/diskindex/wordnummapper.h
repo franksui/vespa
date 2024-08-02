@@ -20,7 +20,7 @@ class WordNumMapping
 
     static uint64_t noWordNum() { return 0u; }
 
-    Array _old2newwords;
+    Array _old2newwords;  // (SUI): 记录 word 在合并之后的 wordNum
     uint64_t _oldDictSize;
 public:
 

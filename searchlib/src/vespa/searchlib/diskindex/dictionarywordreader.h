@@ -47,7 +47,7 @@ public:
 
 private:
     // "owners" of file handles.
-    std::unique_ptr<FastOS_FileInterface> _old2newwordfile;
+    std::unique_ptr<FastOS_FileInterface> _old2newwordfile; // (SUI): 写 word 合并之后的 wordNum
 
     using DictionaryFileSeqRead = index::DictionaryFileSeqRead;
     std::unique_ptr<DictionaryFileSeqRead> _dictFile;
@@ -61,7 +61,7 @@ public:
     bool isValid() const {
         return _wordNum != noWordNumHigh();
     }
-
+    // (SUI): 判断 reader 读到的 word 的大小
     bool operator<(const DictionaryWordReader &rhs) const {
         if (!isValid()) {
             return false;

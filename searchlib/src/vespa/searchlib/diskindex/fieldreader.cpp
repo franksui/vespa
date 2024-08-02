@@ -55,7 +55,7 @@ FieldReader::readCounts()
     _dictFile->readWord(_word, _oldWordNum, counts);
     _oldposoccfile->readCounts(counts);
     if (_oldWordNum != noWordNumHigh()) {
-        _wordNum = _wordNumMapper.map(_oldWordNum);
+        _wordNum = _wordNumMapper.map(_oldWordNum); // (SUI): 更新 wordNum
         assert(_wordNum != noWordNum());
         assert(_wordNum != noWordNumHigh());
         _residue = counts._numDocs;
@@ -68,7 +68,7 @@ void
 FieldReader::readDocIdAndFeatures()
 {
     _oldposoccfile->readDocIdAndFeatures(_docIdAndFeatures);
-    _docIdAndFeatures.set_doc_id(_docIdMapper.mapDocId(_docIdAndFeatures.doc_id()));
+    _docIdAndFeatures.set_doc_id(_docIdMapper.mapDocId(_docIdAndFeatures.doc_id())); // (SUI): 判断该 doc 是否有效
 }
 
 
@@ -86,7 +86,7 @@ FieldReader::read()
         }
         --_residue;
         readDocIdAndFeatures();
-        if (_docIdAndFeatures.doc_id() != NO_DOC) {
+        if (_docIdAndFeatures.doc_id() != NO_DOC) {  // (SUI): doc 有效的情况下才返回
             return;
         }
     }

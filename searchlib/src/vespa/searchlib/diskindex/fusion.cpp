@@ -74,6 +74,7 @@ Fusion::mergeFields(vespalib::Executor& shared_executor, std::shared_ptr<IFlushT
 {
     FieldMergersState field_mergers_state(_fusion_out_index, shared_executor, flush_token);
     const Schema &schema = getSchema();
+    // (SUI): 每个 field merge
     for (SchemaUtil::IndexIterator iter(schema); iter.isValid(); ++iter) {
         auto& field_merger = field_mergers_state.alloc_field_merger(iter.getIndex());
         field_mergers_state.schedule_task(field_merger);

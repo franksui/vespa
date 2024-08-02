@@ -38,6 +38,7 @@ FusionRunner::~FusionRunner() = default;
 
 namespace {
 
+// (SUI): SelectorArray 应该是说 docId 在哪个索引里是有效的
 void readSelectorArray(const string &selector_name, SelectorArray &selector_array,
                        const vector<uint8_t> &id_map, uint32_t base_id, uint32_t fusion_id) {
     FixedSourceSelector::UP selector =
@@ -57,7 +58,7 @@ void readSelectorArray(const string &selector_name, SelectorArray &selector_arra
             source = id_map.size() - 1;
         }
         assert(source < id_map.size());
-        selector_array.push_back(id_map[source]);
+        selector_array.push_back(id_map[source]); // (SUI): 这里不减 fusion_id 是因为存的时候减了？
     }
 }
 

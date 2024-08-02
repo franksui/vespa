@@ -127,7 +127,7 @@ FieldMerger::open_input_word_readers()
         auto reader(std::make_unique<DictionaryWordReader>());
         const vespalib::string &tmpindexpath = createTmpPath(_field_dir, oi.getIndex());
         const vespalib::string &oldindexpath = oi.getPath();
-        vespalib::string wordMapName = tmpindexpath + "/old2new.dat";
+        vespalib::string wordMapName = tmpindexpath + "/old2new.dat"; // (SUI): 这个是干什么的
         vespalib::string fieldDir(oldindexpath + "/" + _field_name);
         vespalib::string dictName(fieldDir + "/dictionary");
         const Schema &oldSchema = oi.getSchema();
@@ -139,7 +139,7 @@ FieldMerger::open_input_word_readers()
             LOG(error, "Could not open dictionary %s to generate %s", dictName.c_str(), wordMapName.c_str());
             return false;
         }
-        reader->read();
+        reader->read();  // (SUI): 先读进一个 word 来
         if (reader->isValid()) {
             _word_readers.push_back(std::move(reader));
             _word_heap->initialAdd(_word_readers.back().get());
@@ -195,7 +195,7 @@ FieldMerger::renumber_word_ids_main()
     _word_heap->merge(*_word_aggregator, *_flush_token);
     if (_flush_token->stop_requested()) {
         _failed = true;
-    } else if (_word_heap->empty()) {
+    } else if (_word_heap->empty()) {  // (SUI): 判断所有的 reader 都读完了
         _state = State::RENUMBER_WORD_IDS_FINISH;
     }
 }
@@ -279,7 +279,7 @@ FieldMerger::open_input_field_readers()
         _readers.push_back(FieldReader::allocFieldReader(index, oldSchema, _field_length_scanner));
         auto& reader = *_readers.back();
         reader.setup(_word_num_mappings[oi.getIndex()], oi.getDocIdMapping());
-        if (!open_input_field_reader()) {
+        if (!open_input_field_reader()) {  // (SUI): open
             merge_postings_failed();
             return;
         }
@@ -515,6 +515,10 @@ FieldMerger::merge_field_finish()
     _state = State::MERGE_DONE;
 }
 
+// (SUI): 一步步 merge
+// 1. 读词典, 对 word 进行重新排序编号
+// 2. 按照最新的词典排序， 读 posocc 并写到新的 fusion posocc
+// 3. flush 新的词典
 void
 FieldMerger::process_merge_field()
 {

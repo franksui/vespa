@@ -76,7 +76,7 @@ public:
     virtual void scan_element_lengths(uint32_t scan_chunk);
 
     void write(FieldWriter &writer) {
-        if (_wordNum != writer.getSparseWordNum()) {
+        if (_wordNum != writer.getSparseWordNum()) { // (SUI): new word
             writer.newWord(_wordNum, _word);
         }
         writer.add(_docIdAndFeatures);
@@ -84,7 +84,7 @@ public:
 
     bool isValid() const { return _wordNum != noWordNumHigh(); }
 
-    bool operator<(const FieldReader &rhs) const {
+    bool operator<(const FieldReader &rhs) const {   // (SUI): 按照 word / docId 排序
         return _wordNum < rhs._wordNum ||
             (_wordNum == rhs._wordNum &&
              _docIdAndFeatures.doc_id() < rhs._docIdAndFeatures.doc_id());

@@ -37,7 +37,7 @@ public:
     void add(const DocIdAndFeatures &features) {
         assert(features.doc_id() < _docIdLimit);
         assert(features.doc_id() > _prevDocId);
-        _posoccfile->writeDocIdAndFeatures(features);
+        _posoccfile->writeDocIdAndFeatures(features); // (SUI): 直接写 posocc, 不需要合并 doc, 因为对一个 word 只会有一个 doc
         _bvc.add(features.doc_id());
         _prevDocId = features.doc_id();
     }
