@@ -14,8 +14,8 @@ namespace proton::matching {
  **/
 struct MatchParams {
     const uint32_t          numDocs;
-    const uint32_t          heapSize;
-    const uint32_t          arraySize;
+    const uint32_t          heapSize;   // (SUI): rerank-count default: 100
+    const uint32_t          arraySize;  // (SUI): keep-rank-count default: 10000
     const uint32_t          offset;
     const uint32_t          hits;
     const std::optional<search::feature_t> first_phase_rank_score_drop_limit;

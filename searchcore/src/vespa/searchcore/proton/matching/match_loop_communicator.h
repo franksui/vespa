@@ -37,7 +37,7 @@ private:
         template<typename Q, typename F, typename R>
         void mingle(Q &queue, F &&accept, R register_first_phase_rank);
         bool cmp(uint32_t a, uint32_t b) {
-            return (in(a).get().second > in(b).get().second);
+            return (in(a).get().second > in(b).get().second);  // (SUI): firstRank score
         }
     };
     struct SelectCmp {

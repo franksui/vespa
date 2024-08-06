@@ -160,7 +160,7 @@ public:
     using DescriptionVector = std::vector<Description>;
 
 private:
-    DescriptionVector _descriptions;
+    DescriptionVector _descriptions;  // (SUI): 多个 desc 是啥意思
     size_t _nextTag;
 
     Description & getCurrent() { return _descriptions.back(); }

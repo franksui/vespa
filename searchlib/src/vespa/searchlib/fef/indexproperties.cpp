@@ -640,7 +640,12 @@ Level::lookup(const Properties &props, uint32_t defaultValue)
 }
 
 namespace hitcollector {
-
+/*
+    if (rerankCount > -1) {
+        properties.add(new Pair<>("vespa.hitcollector.heapsize", rerankCount + ""));
+    }
+*/
+// (SUI): rerank-count
 const vespalib::string HeapSize::NAME("vespa.hitcollector.heapsize");
 const uint32_t HeapSize::DEFAULT_VALUE(100);
 

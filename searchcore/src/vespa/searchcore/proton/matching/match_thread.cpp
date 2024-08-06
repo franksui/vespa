@@ -69,7 +69,7 @@ fillPartialResult(ResultProcessor::Context & context, size_t totalHits, size_t n
     PartialResult &pr = *context.result;
     pr.totalHits(totalHits);
     size_t maxHits = std::min(numHits, pr.maxSize());
-    const search::BitVector & validLids = context._validLids;
+    const search::BitVector & validLids = context._validLids; // (SUI): 这里检查的 doc 是否有效 ?
     if (pr.hasSortData()) {
         FastS_SortSpec &spec = context.sort->sortSpec;
         for (size_t i = 0; i < maxHits; ++i) {
@@ -317,6 +317,7 @@ MatchThread::match_loop_helper(MatchTools &tools, HitCollector &hits)
 void
 MatchThread::secondPhase(MatchTools & tools, HitCollector & hits) {
     trace->addEvent(4, "Start second phase rerank");
+    // (SUI): 获取 firstPhase 的结果
     auto sorted_hit_seq = matchToolsFactory.should_diversify()
                           ? hits.getSortedHitSequence(matchParams.arraySize)
                           : hits.getSortedHitSequence(matchParams.heapSize);
@@ -528,7 +529,7 @@ MatchThread::run()
     total_time_s = vespalib::to_s(total_time.elapsed());
     thread_stats.active_time(total_time_s - wait_time_s).wait_time(wait_time_s);
     trace->addEvent(4, "Start thread merge");
-    mergeDirector.dualMerge(thread_id, *resultContext->result, resultContext->groupingSource);
+    mergeDirector.dualMerge(thread_id, *resultContext->result, resultContext->groupingSource); // (SUI): 合并结果到 thread 0
     trace->addEvent(4, "MatchThread::run Done");
     if (match_profiler) {
         match_profiler->report(trace->createCursor("match_profiling"));

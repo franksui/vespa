@@ -23,16 +23,16 @@ Rendezvous<IN, OUT, external_id>::meet_others(IN &input, OUT &output, size_t my_
     }
     _in[my_id] = &input;
     _out[my_id] = &output;
-    if (++_next == _size) {
+    if (++_next == _size) {  // (SUI): 数量满足则进行 mingle
         mingle();
-        if (external_id) {
+        if (external_id) { // (SUI): 数据存在外部, 指针重置为 nullptr
             std::fill(_in.begin(), _in.end(), nullptr);
             std::fill(_out.begin(), _out.end(), nullptr);
         }
         _next = 0;
         ++_gen;
         _cond.notify_all();
-    } else {
+    } else {  // (SUI): 不满足则等
         size_t oldgen = _gen;
         while (oldgen == _gen) {
             _cond.wait(guard);

@@ -71,6 +71,7 @@ MatchLoopCommunicator::GetSecondPhaseWork::GetSecondPhaseWork(size_t n, size_t t
 
 MatchLoopCommunicator::GetSecondPhaseWork::~GetSecondPhaseWork() = default;
 
+// (SUI): 在这里去把 firstPhase 的 topK(rerankCount) 拿出来了
 template<typename Q, typename F, typename R>
 void
 MatchLoopCommunicator::GetSecondPhaseWork::mingle(Q &queue, F &&accept, R register_first_phase_rank)
@@ -78,11 +79,11 @@ MatchLoopCommunicator::GetSecondPhaseWork::mingle(Q &queue, F &&accept, R regist
     size_t picked = 0;
     search::feature_t last_score = 0.0;
     while ((picked < topN) && !queue.empty()) {
-        uint32_t i = queue.front();
-        const Hit & hit = in(i).get();
+        uint32_t i = queue.front();  // (SUI): 优先队列中排最前面的输入
+        const Hit & hit = in(i).get(); // (SUI): 当前的 Hit
         if (accept(hit.first)) {
-            register_first_phase_rank.pick(hit.first);
-            out(picked % size()).emplace_back(hit, i);
+            register_first_phase_rank.pick(hit.first);  // (SUI): RegisterFirstPhaseRank 记录 firstPhase 排序的位置
+            out(picked % size()).emplace_back(hit, i);  // (SUI): hit 以及所属的输入 In, 这个 i 后面是为了找到对应的 Out 输出
             last_score = hit.second;
             if (++picked == 1) {
                 best_scores.high = hit.second;
@@ -94,7 +95,7 @@ MatchLoopCommunicator::GetSecondPhaseWork::mingle(Q &queue, F &&accept, R regist
             }
             register_first_phase_rank.drop();
         }
-        in(i).next();
+        in(i).next(); // (SUI): 下一个
         if (in(i).valid()) {
             queue.adjust();
         } else {
@@ -126,7 +127,7 @@ MatchLoopCommunicator::GetSecondPhaseWork::mingle()
     vespalib::PriorityQueue<uint32_t, SelectCmp> queue(SelectCmp(*this));
     for (size_t i = 0; i < size(); ++i) {
         out(i).reserve(est_out);
-        if (in(i).valid()) {
+        if (in(i).valid()) {  // (SUI): 这个时候 in 和 out 都已经被赋值了
             queue.push(i);
         }
     }

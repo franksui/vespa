@@ -64,7 +64,7 @@ auto make_reply(const MatchToolsFactory &mtf, ResultProcessor &processor, Thread
         auto docs = processor.extract_docid_ordering(*full_result);
         auto reply = processor.makeReply(std::move(std::move(full_result)));
         if ((docs.size() > 0) && reply->_reply) {
-            reply->_reply->match_features = ExtractFeatures::get_match_features(mtf, docs, bundle);
+            reply->_reply->match_features = ExtractFeatures::get_match_features(mtf, docs, bundle);  // (SUI): 获取 match features ?
         }
         return reply;
     } else {

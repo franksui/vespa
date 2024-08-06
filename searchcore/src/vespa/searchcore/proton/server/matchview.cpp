@@ -66,7 +66,7 @@ std::unique_ptr<SearchReply>
 MatchView::match(std::shared_ptr<const ISearchHandler> searchHandler, const SearchRequest &req,
                  vespalib::ThreadBundle &threadBundle) const
 {
-    Matcher::SP matcher = getMatcher(req.ranking);
+    Matcher::SP matcher = getMatcher(req.ranking);  // (SUI): find rank_profile
     SearchSession::OwnershipBundle owned_objects(createContext(), std::move(searchHandler));
     owned_objects.readGuard = _metaStore->getReadGuard();
     ISearchContext & search_ctx = owned_objects.context.getSearchContext();
@@ -74,7 +74,7 @@ MatchView::match(std::shared_ptr<const ISearchHandler> searchHandler, const Sear
     const search::IDocumentMetaStore & dms = owned_objects.readGuard->get();
     const bucketdb::BucketDBOwner & bucketDB = _metaStore->get().getBucketDB();
     return matcher->match(req, threadBundle, search_ctx, attribute_ctx,
-                          _sessionMgr, dms, bucketDB, std::move(owned_objects));
+                          _sessionMgr, dms, bucketDB, std::move(owned_objects));  // (SUI): dms 提供最后 doc 是否有效的验证
 }
 
 } // namespace proton

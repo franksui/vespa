@@ -273,8 +273,8 @@ Matcher::match(const SearchRequest &request, vespalib::ThreadBundle &threadBundl
         }
 
         const Properties & rankProperties = request.propertiesMap.rankProperties();
-        uint32_t heapSize = HeapSize::lookup(rankProperties, _rankSetup->getHeapSize());
-        uint32_t arraySize = ArraySize::lookup(rankProperties, _rankSetup->getArraySize());
+        uint32_t heapSize = HeapSize::lookup(rankProperties, _rankSetup->getHeapSize());  // (SUI): 这个是 secondPhase rerank-count
+        uint32_t arraySize = ArraySize::lookup(rankProperties, _rankSetup->getArraySize()); // (SUI): keep-rank-count default: 10000
         auto first_phase_rank_score_drop_limit = FirstPhaseRankScoreDropLimit::lookup(rankProperties, _rankSetup->get_first_phase_rank_score_drop_limit());
         auto second_phase_rank_score_drop_limit = SecondPhaseRankScoreDropLimit::lookup(rankProperties, _rankSetup->get_second_phase_rank_score_drop_limit());
 

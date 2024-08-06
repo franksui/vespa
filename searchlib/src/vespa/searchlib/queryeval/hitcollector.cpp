@@ -70,6 +70,7 @@ HitCollector::RankedHitCollector::collect(uint32_t docId, feature_t score)
         }
         hc._hits.emplace_back(docId, score);
     } else {
+        // (SUI): hits >= maxHitsSize 的时候会替换 Collector
         collectAndChangeCollector(docId, score); // note - self-destruct.
     }
 }
@@ -130,7 +131,7 @@ void
 HitCollector::DocIdCollector<CollectRankedHit>::collect(uint32_t docId, feature_t score)
 {
     if (CollectRankedHit) {
-        this->considerForHitVector(docId, score);
+        this->considerForHitVector(docId, score); // (SUI): 先看是否能写到堆里
     }
     HitCollector & hc = this->_hc;
     if (hc._docIdVector.size() < hc._maxDocIdVectorSize) {
@@ -140,7 +141,7 @@ HitCollector::DocIdCollector<CollectRankedHit>::collect(uint32_t docId, feature_
         {
             hc._unordered = true;
         }
-        hc._docIdVector.push_back(docId);
+        hc._docIdVector.push_back(docId);  // (SUI): 再塞到 docIdVector 里, 只有前 _maxHitsSize 个 doc 会保留 score
     } else {
         collectAndChangeCollector(docId); // note - self-destruct.
     }
@@ -175,7 +176,7 @@ void
 HitCollector::setReRankedHits(std::vector<Hit> hits)
 {
     auto sort_on_docid = [](const Hit &a, const Hit &b){ return (a.first < b.first); };
-    std::sort(hits.begin(), hits.end(), sort_on_docid);
+    std::sort(hits.begin(), hits.end(), sort_on_docid);  // (SUI): 为啥又按照 docid 排序?
     _reRankedHits = std::move(hits);
 }
 

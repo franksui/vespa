@@ -482,7 +482,7 @@ FeatureNameParser::FeatureNameParser(const string &input)
         for (uint32_t i = 0; i < _parameters.size(); ++i) {
             builder.parameter(_parameters[i]);
         }
-        _executorName = builder.buildName();
+        _executorName = builder.buildName();  // (SUI): executorName 不带 .out
         builder.output(_output);
         _featureName = builder.buildName();
     } else {

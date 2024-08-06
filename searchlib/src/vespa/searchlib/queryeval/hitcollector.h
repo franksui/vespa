@@ -18,7 +18,7 @@ namespace search::queryeval {
  **/
 class HitCollector {
 public:
-    using Hit = std::pair<uint32_t, feature_t>;
+    using Hit = std::pair<uint32_t, feature_t>;  // (SUI): docid, score
 
 private:
     enum class SortOrder { NONE, DOC_ID, HEAP };

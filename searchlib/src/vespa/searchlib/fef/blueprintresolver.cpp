@@ -73,7 +73,7 @@ struct Compiler : public Blueprint::DependencyHandler {
     Errors                      errors;
     ExecutorSpecList           &spec_list;
     FeatureMap                 &feature_map;
-    std::set<vespalib::string>  setup_set;
+    std::set<vespalib::string>  setup_set;  // (SUI): 已经 setup 的 feature
     std::set<vespalib::string>  failed_set;
     const char                 *min_stack;
     const char                 *max_stack;
@@ -93,7 +93,9 @@ struct Compiler : public Blueprint::DependencyHandler {
           min_stack(nullptr),
           max_stack(nullptr) {}
     ~Compiler() override;
-
+    // (SUI): 这个是干啥？
+    // 记录栈信息最大最小地址的： 首先定义了一个名为 c 的 const char 变量，并将其初始化为字符 'X'。
+    // 然后通过比较 min_stack 和 max_stack 的值，将其更新为当前栈帧的最小地址和最大地址。
     void probe_stack() {
         const char c = 'X';
         min_stack = (min_stack == nullptr) ? &c : std::min(min_stack, &c);
@@ -163,8 +165,8 @@ struct Compiler : public Blueprint::DependencyHandler {
         if (setup_set.count(parser.executorName()) == 0) {
             setup_set.insert(parser.executorName());
             if (Blueprint::SP blueprint = factory.createBlueprint(parser.baseName())) {
-                resolve_stack.emplace_back(std::move(blueprint), parser);
-                FrameGuard frame_guard(resolve_stack);
+                resolve_stack.emplace_back(std::move(blueprint), parser);  // (SUI): 这个栈是用来判断是否有循环依赖的?
+                FrameGuard frame_guard(resolve_stack);  // (SUI): 析构的时候会从 resolve_stack pop 出来, 并且 detach_dependency_handler   
                 self().spec.blueprint->setName(parser.executorName());
                 self().spec.blueprint->attach_dependency_handler(*this);
                 if (!self().spec.blueprint->setup(index_env, parser.parameters())) {
