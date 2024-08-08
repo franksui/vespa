@@ -103,7 +103,7 @@ fillPartialResult(ResultProcessor::Context & context, size_t totalHits, size_t n
 MatchThread::Context::Context(std::optional<double> first_phase_rank_score_drop_limit, MatchTools &tools, HitCollector &hits, uint32_t num_threads)
     : matches(0),
       _matches_limit(tools.match_limiter().sample_hits_per_thread(num_threads)),
-      _score_feature(get_score_feature(tools.rank_program())),
+      _score_feature(get_score_feature(tools.rank_program())),  // (SUI): score
       _first_phase_rank_score_drop_limit(first_phase_rank_score_drop_limit.value_or(0.0 /* ignored */)),
       _hits(hits),
       _doom(tools.getDoom()),
@@ -114,7 +114,7 @@ MatchThread::Context::Context(std::optional<double> first_phase_rank_score_drop_
 template <MatchThread::RankDropLimitE use_rank_drop_limit>
 void
 MatchThread::Context::rankHit(uint32_t docId) {
-    double score = _score_feature.as_number(docId);
+    double score = _score_feature.as_number(docId);  // (SUI): 算分
     // convert NaN and Inf scores to -Inf
     if (__builtin_expect(std::isnan(score) || std::isinf(score), false)) {
         score = -HUGE_VAL;
@@ -191,7 +191,7 @@ MatchThread::inner_match_loop(Context &context, MatchTools &tools, DocidRange &d
     uint32_t docId = search->seekFirst(docid_range.begin);
     while ((docId < docid_range.end) && !context.atSoftDoom()) {
         if (do_rank) {
-            search->unpack(docId);
+            search->unpack(docId);  // (SUI): unpack 当前 doc 的 posocc 之类的信息
             context.rankHit<use_rank_drop_limit>(docId);
         } else {
             context.addHit(docId);

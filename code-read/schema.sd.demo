@@ -1,0 +1,592 @@
+
+schema item_global_dv_normal_20240806_183600_vn0 {
+    document {
+            field attr_catid type array<string> {
+                indexing : index
+                match : exact
+            }
+            field atr_vec_v2 type tensor<float>(x[16]) {
+                indexing : attribute
+            }
+            field addresses type array<string> {
+                indexing : index
+                rank : filter
+            }
+            field atr_vec_v1 type tensor<float>(x[16]) {
+                indexing : attribute
+            }
+            field traffic_control_rule_ids type array<string> {
+            }
+            field attr_pop type long {
+                indexing : attribute
+                rank : filter
+                attribute : fast-search
+            }
+            field attr_color_tok_v2 type array<string> {
+                dictionary {
+                    hash
+                    cased
+                }
+                indexing : index
+                normalizing : none
+                match {
+                    cased
+                    exact
+                }
+            }
+            field high_price_tag type array<string> {
+                dictionary {
+                    hash
+                    cased
+                }
+                indexing : index
+                match {
+                    cased
+                    exact
+                }
+            }
+            field is_excellent type int {
+                indexing : attribute
+                rank : filter
+                attribute : fast-search
+            }
+            field atr_vec_v3 type tensor<float>(x[16]) {
+                indexing : attribute
+            }
+            field attr_cross_border type string {
+                indexing : attribute|summary|index
+                match : exact
+            }
+            field attr_user_verified type string {
+                indexing : index
+                match : exact
+            }
+            field index_time type long {
+                indexing : attribute
+                rank : filter
+                attribute : fast-search
+            }
+            field attr_total_sold type long {
+                indexing : attribute
+                rank : filter
+                attribute : fast-search
+            }
+            field attr_attribute_tag_v2 type weightedset<string> {
+                dictionary {
+                    hash
+                    cased
+                }
+                indexing : index
+                match {
+                    cased
+                    exact
+                }
+                rank : normal
+            }
+            field attr_item_id type long {
+                indexing : attribute|summary
+                rank : filter
+                attribute : fast-search
+            }
+            field attr_price type long {
+                indexing : attribute|summary
+                rank : filter
+                attribute : fast-search
+            }
+            field attr_item_excellent_tag type array<string> {
+                dictionary {
+                    hash
+                    cased
+                }
+                indexing : index
+                match {
+                    cased
+                    exact
+                }
+            }
+            field attr_discount_value type long {
+                indexing : attribute
+                rank : filter
+                attribute : fast-search
+            }
+            field attr_officialshop type string {
+                indexing : index
+                match : exact
+            }
+            field attr_lpg type int {
+                dictionary {
+                    hash
+                    cased
+                }
+                indexing : attribute
+                match : cased
+                rank : filter
+                attribute : fast-search
+            }
+            field attr_item_rating_scaled_v3 type long {
+                indexing : attribute
+                rank : filter
+                attribute : fast-search
+            }
+            field attr_enablepromo type array<string> {
+                dictionary {
+                    hash
+                    cased
+                }
+                indexing : index
+                normalizing : none
+                match {
+                    cased
+                    exact
+                }
+            }
+            field attr_sold_count type long {
+                indexing : attribute|summary
+                rank : filter
+                attribute : fast-search
+            }
+            field cvr_vec_v2 type tensor<float>(x[16]) {
+                indexing : attribute
+            }
+            field pname type string {
+                indexing : index
+                normalizing : none
+            }
+            field cvr_vec_v1 type tensor<float>(x[16]) {
+                indexing : attribute
+            }
+            field attr_blockbuyerplatform type array<string> {
+                indexing : index
+                match : exact
+            }
+            field cvr_vec_v3 type tensor<float>(x[16]) {
+                indexing : attribute
+            }
+            field attr_algo_flags type array<string> {
+                dictionary {
+                    hash
+                    cased
+                }
+                indexing : index
+                match {
+                    cased
+                    exact
+                }
+            }
+            field attr_spu_tag type array<string> {
+                dictionary {
+                    hash
+                    cased
+                }
+                indexing : index
+                match {
+                    cased
+                    exact
+                }
+            }
+            field attr_collections type array<string> {
+                indexing : index
+                match : exact
+            }
+            field attr_user_tag type array<string> {
+                indexing : index
+                match : exact
+            }
+            field name type string {
+                indexing : index
+                normalizing : none
+            }
+            field attr_item_behavior type weightedset<string> {
+                dictionary {
+                    hash
+                    cased
+                }
+                indexing : index
+                match {
+                    cased
+                    exact
+                }
+                rank : normal
+            }
+            field stat_price type double {
+                indexing : attribute
+            }
+            field attr_brand_tag_v2 type weightedset<string> {
+                dictionary {
+                    hash
+                    cased
+                }
+                indexing : index
+                match {
+                    cased
+                    exact
+                }
+                rank : normal
+            }
+            field attr_shop_id type long {
+                indexing : attribute|summary
+                rank : filter
+                attribute : fast-search
+            }
+            field global_brand type string {
+                indexing : index
+                normalizing : none
+            }
+            field attr_global_brandid type string {
+                indexing : index
+                match : exact
+            }
+            field attr_disablepromo type array<string> {
+                dictionary {
+                    hash
+                    cased
+                }
+                indexing : index
+                normalizing : none
+                match {
+                    cased
+                    exact
+                }
+            }
+            field attr_behavior_feature type weightedset<string> {
+                dictionary {
+                    hash
+                    cased
+                }
+                indexing : index
+                match {
+                    cased
+                    exact
+                }
+                rank : normal
+            }
+            field brandtag type weightedset<string> {
+                dictionary {
+                    hash
+                    cased
+                }
+                indexing : index
+                match {
+                    cased
+                    exact
+                }
+                rank : normal
+            }
+            field hiddentag type weightedset<string> {
+                dictionary {
+                    hash
+                    cased
+                }
+                indexing : index
+                match {
+                    cased
+                    exact
+                }
+                rank : normal
+            }
+            field attr_item_behavior_v2 type weightedset<string> {
+                dictionary {
+                    hash
+                    cased
+                }
+                indexing : index
+                match {
+                    cased
+                    exact
+                }
+                rank : normal
+            }
+            field attr_color_tag_v2 type weightedset<string> {
+                dictionary {
+                    hash
+                    cased
+                }
+                indexing : index
+                match {
+                    cased
+                    exact
+                }
+                rank : normal
+            }
+            field attr_fe_catid type array<string> {
+                indexing : index
+                match : exact
+            }
+            field attr_attribute_tok_v2 type array<string> {
+                dictionary {
+                    hash
+                    cased
+                }
+                indexing : index
+                normalizing : none
+                match {
+                    cased
+                    exact
+                }
+            }
+            field attr_product_ne_tag_v2 type weightedset<string> {
+                dictionary {
+                    hash
+                    cased
+                }
+                indexing : index
+                match {
+                    cased
+                    exact
+                }
+                rank : normal
+            }
+            field attr_item_rating_v3 type string {
+                indexing : index
+                match : exact
+            }
+            field attr_mtime type long {
+                indexing : attribute|summary
+                rank : filter
+                attribute : fast-search
+            }
+            field ctr_vec_v1 type tensor<float>(x[16]) {
+                indexing : attribute
+            }
+            field ctr_vec_v2 type tensor<float>(x[16]) {
+                indexing : attribute
+            }
+            field ctr_vec_v3 type tensor<float>(x[16]) {
+                indexing : attribute
+            }
+            field attrvalue type string {
+                indexing : index
+                normalizing : none
+            }
+            field recforest_id type array<string> {
+                dictionary {
+                    hash
+                    cased
+                }
+                indexing : index
+                match {
+                    cased
+                    exact
+                }
+                rank : filter
+            }
+            field attr_relevant_tag type weightedset<string> {
+                dictionary {
+                    hash
+                    cased
+                }
+                indexing : index
+                match {
+                    cased
+                    exact
+                }
+                rank : normal
+            }
+            field attr_tags type array<string> {
+                dictionary {
+                    hash
+                    cased
+                }
+                indexing : index
+                match {
+                    cased
+                    exact
+                }
+            }
+            field pdn_vec_version_a type tensor<float>(x[64]) {
+                indexing : attribute
+            }
+            field attr_flags type array<string> {
+                dictionary {
+                    hash
+                    cased
+                }
+                indexing : index
+                match {
+                    cased
+                    exact
+                }
+            }
+            field attr_brand_tok_v2 type array<string> {
+                dictionary {
+                    hash
+                    cased
+                }
+                indexing : index
+                normalizing : none
+                match {
+                    cased
+                    exact
+                }
+            }
+            field attr_item_behavior_v2_vespa type tensor<double>(key{}) {
+                indexing : attribute
+            }
+            field attr_product_ne_tok_v2 type array<string> {
+                dictionary {
+                    hash
+                    cased
+                }
+                indexing : index
+                normalizing : none
+                match {
+                    cased
+                    exact
+                }
+            }
+            field attr_extracted_tok_v2 type array<string> {
+                dictionary {
+                    hash
+                    cased
+                }
+                indexing : index
+                match {
+                    cased
+                    exact
+                }
+            }
+            field attr_global_attributeid type array<string> {
+                dictionary {
+                    hash
+                    cased
+                }
+                indexing : index
+                match {
+                    cased
+                    exact
+                }
+            }
+            field attr_item_condition_v3 type string {
+                indexing : index
+                match : exact
+            }
+            field pdn_i2i_feas type tensor<float>(key{}) {
+                indexing : attribute
+            }
+            field attr_labels type array<string> {
+                indexing : index
+                match : exact
+            }
+            field q2q_global_cat_ids type array<string> {
+                dictionary {
+                    hash
+                    cased
+                }
+                indexing : index
+                normalizing : none
+                match {
+                    cased
+                    exact
+                }
+            }
+            field attr_audience_tag_v2 type weightedset<string> {
+                dictionary {
+                    hash
+                    cased
+                }
+                indexing : index
+                match {
+                    cased
+                    exact
+                }
+                rank : normal
+            }
+    }
+        document-summary simple {
+                summary attr_mtime type long {
+                }
+                summary attr_price type long {
+                }
+                summary attr_item_id type long {
+                }
+                summary attr_shop_id type long {
+                }
+                summary attr_sold_count type long {
+                }
+                summary attr_cross_border type string {
+                }
+        }
+        fieldset union_text_match {
+            fields : attr_attribute_tok_v2, attr_brand_tok_v2, attr_color_tok_v2, attr_product_ne_tok_v2, global_brand, name, pname, q2q_global_cat_ids
+        }
+        rank-profile global_similarity {
+                function no_tensor(t) {
+                    expression : reduce(t, min) == 0 && reduce(t, max) == 0
+                }
+                function max_rescore() {
+                    expression : max(query(script_query_weight) * firstPhase, query(script_rescore_query_weight) * vector_rescore())
+                }
+                function sum_rescore() {
+                    expression : query(script_query_weight) * firstPhase + query(script_rescore_query_weight) * vector_rescore()
+                }
+                function vector_rescore() {
+                    expression : if (no_tensor(query(predict_user_vec_ctr)) || no_tensor(query(predict_user_vec_cvr)) || no_tensor(attribute(ctr_vec_v1)) || no_tensor(attribute(cvr_vec_v1)), 0, sigmoid(sum(query(predict_user_vec_ctr) * attribute(ctr_vec_v1))) * sigmoid(sum(query(predict_user_vec_cvr) * attribute(cvr_vec_v1))) + 1)
+                }
+                function item_behavior_score() {
+                    expression : score(attr_item_behavior) + score(attr_item_behavior_v2)
+                }
+            first-phase {
+                expression : matchCount(attr_officialshop) + score(attr_catid) + item_behavior_score() + score(attr_behavior_feature) + score(attr_product_ne_tag_v2) + score(attr_brand_tag_v2)
+            }
+            second-phase {
+                expression : if(query(second_phase_score_mode) == 1, sum_rescore(), max_rescore())
+                rerank-count : 5000
+            }
+            rank-features {
+                score(attr_catid)
+                score(attr_item_behavior)
+                score(attr_item_behavior_v2)
+                score(attr_behavior_feature)
+                score(attr_product_ne_tag_v2)
+                score(attr_brand_tag_v2)
+            }
+            rank-properties {
+                query(script_query_weight) : 1.0
+                query(second_phase_score_mode) : 1
+                query(script_rescore_query_weight) : 1.0
+            }
+            summary-features {
+                vector_rescore()
+            }
+            min-hits-per-thread : 40000
+            num-search-partitions : 32
+            ignore-default-rank-features 
+        }
+        rank-profile global_similarity_merged inherits global_similarity {
+            rank-properties {
+                query(script_query_weight) : 1.0
+                query(second_phase_score_mode) : 1
+                score(name).enableMatchedWeights : summary-features
+                score(pname).enableMatchedWeights : summary-features
+                query(script_rescore_query_weight) : 1.0
+                score(global_brand).enableMatchedWeights : summary-features
+                score(attr_brand_tok_v2).enableMatchedWeights : summary-features
+                score(attr_color_tok_v2).enableMatchedWeights : summary-features
+                score(q2q_global_cat_ids).enableMatchedWeights : summary-features
+                score(attr_attribute_tok_v2).enableMatchedWeights : summary-features
+                score(attr_product_ne_tok_v2).enableMatchedWeights : summary-features
+            }
+            summary-features {
+                vector_rescore()
+                score.weights
+            }
+        }
+        rank-profile global_similarity_vector_v2_max inherits global_similarity {
+                function vector_rescore() {
+                    expression : if (no_tensor(query(predict_user_vec_ctr)) || no_tensor(query(predict_user_vec_cvr)) || no_tensor(attribute(ctr_vec_v2)) || no_tensor(attribute(cvr_vec_v2)), 0, sigmoid(sum(query(predict_user_vec_ctr) * attribute(ctr_vec_v2))) * sigmoid(sum(query(predict_user_vec_cvr) * attribute(cvr_vec_v2))) + 1)
+                }
+            second-phase {
+                expression : max_rescore()
+                rerank-count : 5000
+            }
+        }
+        rank-profile global_similarity_saturation_item_behavior inherits global_similarity {
+            rank-properties {
+                query(script_query_weight) : 1.0
+                query(second_phase_score_mode) : 1
+                query(script_rescore_query_weight) : 1.0
+                score(attr_item_behavior).function : saturation
+            }
+        }
+    stemming : none
+}

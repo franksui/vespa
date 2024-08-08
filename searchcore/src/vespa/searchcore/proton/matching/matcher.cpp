@@ -102,6 +102,7 @@ handleGroupingSession(SessionManager &sessionMgr, GroupingContext & groupingCont
 
 }  // namespace proton::matching::<unnamed>
 
+// (SUI): props 是 rank_profile
 Matcher::Matcher(const search::index::Schema &schema, Properties props, const std::atomic<steady_time> & now_ref,
                  QueryLimiter &queryLimiter, const search::fef::IRankingAssetsRepo &rankingAssetsRepo, uint32_t distributionKey)
   : _indexEnv(distributionKey, schema, std::move(props), rankingAssetsRepo),
@@ -143,7 +144,7 @@ Matcher::create_match_tools_factory(const search::engine::Request &request, ISea
                                     const IDocumentMetaStoreContext::IReadGuard::SP * metaStoreReadGuard,
                                     uint32_t maxHits, bool is_search) const
 {
-    const Properties & rankProperties = request.propertiesMap.rankProperties();
+    const Properties & rankProperties = request.propertiesMap.rankProperties(); // (SUI): 请求里的 properties
     bool softTimeoutEnabled = softtimeout::Enabled::lookup(rankProperties, _rankSetup->getSoftTimeoutEnabled());
     bool hasFactorOverride = softtimeout::Factor::isPresent(rankProperties);
     double factor = softTimeoutEnabled
@@ -250,7 +251,7 @@ Matcher::match(const SearchRequest &request, vespalib::ThreadBundle &threadBundl
                 }
             }
         }
-        const Properties *feature_overrides = &request.propertiesMap.featureOverrides();
+        const Properties *feature_overrides = &request.propertiesMap.featureOverrides();  // (SUI): 请求里的 featureOverrides
         if (shouldCacheSearchSession) {
             // These should have been moved instead.
             owned_objects.feature_overrides = std::make_unique<Properties>(*feature_overrides);
@@ -289,6 +290,7 @@ Matcher::match(const SearchRequest &request, vespalib::ThreadBundle &threadBundl
         size_t numThreadsPerSearch = computeNumThreadsPerSearch(mtf->estimate(), rankProperties);
         vespalib::LimitedThreadBundleWrapper limitedThreadBundle(threadBundle, numThreadsPerSearch);
         MatchMaster master;
+        // (SUI): 一个 searchnode 上配的逻辑 partition 数量: https://docs.vespa.ai/en/reference/schema-reference.html#num-search-partitions
         uint32_t numParts = NumSearchPartitions::lookup(rankProperties, _rankSetup->getNumSearchPartitions());
         if (limitedThreadBundle.size() > 1) {
             attrContext.enableMultiThreadSafe();

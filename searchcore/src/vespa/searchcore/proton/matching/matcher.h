@@ -45,6 +45,7 @@ class MatchToolsFactory;
 /**
  * The Matcher is responsible for performing searches.
  **/
+// (SUI): 每个 Matcher 可以认为是代表了一个 rank_profile
 class Matcher
 {
 private:
@@ -61,7 +62,7 @@ private:
     using steady_time = vespalib::steady_time;
     IndexEnvironment                _indexEnv;
     search::fef::BlueprintFactory   _blueprintFactory;
-    std::shared_ptr<RankSetup>      _rankSetup;
+    std::shared_ptr<RankSetup>      _rankSetup;  // (SUI): rank_profile
     ViewResolver                    _viewResolver;
     std::mutex                      _statsLock;
     MatchingStats                   _stats;

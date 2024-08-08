@@ -93,7 +93,7 @@ public:
      * Virtual destructor to allow safe subclassing.
      **/
     virtual ~IQueryEnvironment() { }
-
+    // (SUI): 当前 query 要存 object 的地方
     IObjectStore & getObjectStore() { return _objectStore; }
     const IObjectStore & getObjectStore() const { return _objectStore; }
 protected:

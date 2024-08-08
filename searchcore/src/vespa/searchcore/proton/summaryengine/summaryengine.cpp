@@ -121,6 +121,7 @@ SummaryEngine::getDocsums(DocsumRequest::Source request, DocsumClient & client)
     return getDocsums(request.release());
 }
 
+// (SUI): get doc sum
 DocsumReply::UP
 SummaryEngine::getDocsums(DocsumRequest::UP req)
 {

@@ -167,7 +167,7 @@ struct Compiler : public Blueprint::DependencyHandler {
             if (Blueprint::SP blueprint = factory.createBlueprint(parser.baseName())) {
                 resolve_stack.emplace_back(std::move(blueprint), parser);  // (SUI): 这个栈是用来判断是否有循环依赖的?
                 FrameGuard frame_guard(resolve_stack);  // (SUI): 析构的时候会从 resolve_stack pop 出来, 并且 detach_dependency_handler   
-                self().spec.blueprint->setName(parser.executorName());
+                self().spec.blueprint->setName(parser.executorName());  // (SUI): 设置 name
                 self().spec.blueprint->attach_dependency_handler(*this);
                 if (!self().spec.blueprint->setup(index_env, parser.parameters())) {
                     fail_self("invalid parameters");

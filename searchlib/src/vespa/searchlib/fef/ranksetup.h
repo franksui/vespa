@@ -39,7 +39,7 @@ public:
     };
 private:
     const BlueprintFactory  &_factory;
-    const IIndexEnvironment &_indexEnv;
+    const IIndexEnvironment &_indexEnv;  // (SUI): 索引的相关信息, const, 再 Matcher 内, 一个 document_type 存在一份
     BlueprintResolver::SP    _first_phase_resolver;
     BlueprintResolver::SP    _second_phase_resolver;
     BlueprintResolver::SP    _match_resolver;

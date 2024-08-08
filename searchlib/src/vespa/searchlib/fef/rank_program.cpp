@@ -237,13 +237,16 @@ RankProgram::setup(const MatchData &md,
 {
     const auto &specs = _resolver->getExecutorSpecs();
     assert(_executors.empty());
+    // (SUI): 先把需要覆盖的 feature 找出来
     std::vector<Override> overrides = prepare_overrides(specs, _resolver->getFeatureMap(), featureOverrides);
     auto override = overrides.begin();
     auto override_end = overrides.end();
 
     _executors.reserve(specs.size());
     _is_const.resize(specs.size()*2); // Reserve space in hashmap for executors to be const
+    // (SUI): 应该是 compile 的时候保证了被用来的 exec 是排在前面的, 下面获取 input_value 的时候才能保证正确
     for (uint32_t i = 0; i < specs.size(); ++i) {
+        // (SUI): 都是在 stash 上创建对象, 内存管理, 最后清的时候统一清, 不用析构(类似 protobuf arena?)
         vespalib::ArrayRef<NumberOrObject> outputs = _hot_stash.create_array<NumberOrObject>(specs[i].output_types.size());
         StashSelector stash(_hot_stash, _cold_stash);
         FeatureExecutor *executor = &(specs[i].blueprint->createExecutor(queryEnv, stash.get()));
@@ -262,9 +265,10 @@ RankProgram::setup(const MatchData &md,
             if (check_const(input_value)) {
                 inputs[input_idx] = LazyValue(input_value);
             } else {
-                inputs[input_idx] = LazyValue(input_value, input_executor);
+                inputs[input_idx] = LazyValue(input_value, input_executor); // (SUI): 通过 input 来依赖 executor
             }
         }
+        // (SUI): 这里判断需要覆盖的 feature， 进行覆盖
         for (; (override < override_end) && (override->ref.executor == i); ++override) {
             FeatureExecutor *tmp = executor;
             executor = &(stash.get().create<FeatureOverrider>(*tmp, override->ref.output, override->number, std::move(override->object)));
@@ -275,16 +279,16 @@ RankProgram::setup(const MatchData &md,
         }
         executor->bind_inputs(inputs);
         executor->bind_outputs(outputs);
-        executor->bind_match_data(md);
+        executor->bind_match_data(md);  // (SUI): match_data bind
         _executors.push_back(executor);
-        if (is_const) {
+        if (is_const) { // (SUI): const 的会跑一下
             run_const(executor);
         }
     }
     for (const auto &seed_entry: _resolver->getSeedMap()) {
         auto seed = seed_entry.second;
         if (specs[seed.executor].output_types[seed.output].is_object()) {
-            unbox(seed, md);
+            unbox(seed, md);  // (SUI): unbox 是什么?
         }
     }
     assert(_executors.size() == specs.size());

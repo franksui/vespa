@@ -16,7 +16,7 @@ namespace matching {
 class Matchers {
 private:
     using Map = vespalib::hash_map<vespalib::string, std::shared_ptr<matching::Matcher>>;
-    Map                                  _rpmap;
+    Map                                  _rpmap;   // (SUI): rank_profile name -> matcher
     const search::fef::RankingAssetsRepo _ranking_assets_repo;
     std::shared_ptr<matching::Matcher>   _fallback;
     std::shared_ptr<matching::Matcher>   _default;

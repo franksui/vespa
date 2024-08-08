@@ -36,8 +36,8 @@ public:
      * executor.
      **/
     struct FeatureRef {
-        uint32_t executor;
-        uint32_t output;
+        uint32_t executor;  // (SUI): executor 在 _executorSpecs 中的 idx
+        uint32_t output;  // (SUI): output idx
         static constexpr uint32_t undef = -1;
 
         FeatureRef() : executor(undef), output(0) {}
@@ -54,7 +54,7 @@ public:
      **/
     struct ExecutorSpec {
         BlueprintSP              blueprint;
-        std::vector<FeatureRef>  inputs;
+        std::vector<FeatureRef>  inputs;  // (SUI): 输入 feature 在 _executorSpecs 中的位置
         std::vector<FeatureType> output_types;
 
         explicit ExecutorSpec(BlueprintSP blueprint_in) noexcept;

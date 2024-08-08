@@ -110,17 +110,21 @@ SearchableDocSubDBConfigurer(const std::shared_ptr<ISummaryManager>& summaryMgr,
 
 SearchableDocSubDBConfigurer::~SearchableDocSubDBConfigurer() = default;
 
+// (SUI): 一个 Matchers 代表了一个 document_type 的 schema, rank_profiles
+// 一个 Matcher 代表一个 document_type 的 schema 和一个 rank_profile,
+// search 的时候会根据 rank_profile 的  name 找到对应的 Matcher
 std::shared_ptr<Matchers>
 SearchableDocSubDBConfigurer::createMatchers(const DocumentDBConfig& new_config_snapshot)
 {
     auto& schema = new_config_snapshot.getSchemaSP();
-    auto& cfg = new_config_snapshot.getRankProfilesConfig();
+    auto& cfg = new_config_snapshot.getRankProfilesConfig(); // (SUI): rank profile config
     search::fef::RankingAssetsRepo ranking_assets_repo_source(_constant_value_factory,
                                                               new_config_snapshot.getRankingConstantsSP(),
                                                               new_config_snapshot.getRankingExpressionsSP(),
                                                               new_config_snapshot.getOnnxModelsSP());
     auto newMatchers = std::make_shared<Matchers>(_now_ref, _queryLimiter, ranking_assets_repo_source);
     auto& ranking_assets_repo = newMatchers->get_ranking_assets_repo();
+    // (SUI): rank_profile
     for (const auto &profile : cfg.rankprofile) {
         vespalib::string name = profile.name;
         search::fef::Properties properties;

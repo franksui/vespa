@@ -198,11 +198,12 @@ QueryValue::make_default_value(const IIndexEnvironment& env) const
     }
 }
 
+// (SUI): 将 input query feature 放到 store 里
 void
 QueryValue::prepare_shared_state(const fef::IQueryEnvironment& env, fef::IObjectStore& store) const
 {
     if (!_stored_value_key.empty() && _type.has_dimensions() && (store.get(_stored_value_key) == nullptr)) {
-        if (auto value = decode_tensor_value(request_lookup(env), _type)) {
+        if (auto value = decode_tensor_value(request_lookup(env), _type)) {  // (SUI): input query
             store.add(_stored_value_key, std::make_unique<ValueWrapper>(std::move(value)));
         }
     }

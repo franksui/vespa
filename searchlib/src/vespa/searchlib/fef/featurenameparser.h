@@ -22,7 +22,7 @@ private:
     string              _baseName;
     StringVector        _parameters;
     string              _output;
-    string              _executorName;
+    string              _executorName; // (SUI): executorName 不带 .out
     string              _featureName;
 
 public:

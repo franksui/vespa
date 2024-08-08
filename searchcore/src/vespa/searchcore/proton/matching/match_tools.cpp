@@ -93,7 +93,7 @@ MatchTools::setup(std::unique_ptr<RankProgram> rank_program, ExecutionProfiler *
     if (!can_reuse_search) {
         recorder.tag_match_data(*_match_data);
         _match_data->set_termwise_limit(termwise_limit);
-        _search = _query.createSearch(*_match_data);
+        _search = _query.createSearch(*_match_data); // (SUI): 创建 search iterator
         _used_handles = std::move(recorder).steal_handles();
         _search_has_changed = false;
     }
@@ -184,7 +184,7 @@ MatchToolsFactory(QueryLimiter               & queryLimiter,
       _attribute_blueprint_params(extract_attribute_blueprint_params(rankSetup, rankProperties, metaStore.getNumActiveLids(), searchContext.getDocIdLimit())),
       _query(),
       _match_limiter(),
-      _queryEnv(indexEnv, attributeContext, rankProperties, searchContext.getIndexes()),
+      _queryEnv(indexEnv, attributeContext, rankProperties, searchContext.getIndexes()), // (SUI): 本次请求的 queryEnv
       _requestContext(doom, thread_bundle, attributeContext, _queryEnv, _queryEnv.getObjectStore(),
                       _attribute_blueprint_params, metaStoreReadGuard),
       _mdl(),
@@ -223,6 +223,7 @@ MatchToolsFactory(QueryLimiter               & queryLimiter,
         }
         _query.freeze();
         trace.addEvent(5, "Prepare shared state for multi-threaded rank executors");
+        // (SUI): 把 query 里的 query feature之类的放 ObjectStore 里, 算是 query property 预处理
         _rankSetup.prepareSharedState(_queryEnv, _queryEnv.getObjectStore());
         _first_phase_rank_lookup = FirstPhaseRankLookup::get_mutable_shared_state(_queryEnv.getObjectStore());
         _diversityParams = extractDiversityParams(_rankSetup, rankProperties);

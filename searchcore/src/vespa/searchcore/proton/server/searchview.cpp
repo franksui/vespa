@@ -98,6 +98,7 @@ SearchView::SearchView(std::shared_ptr<ISummaryManager::ISummarySetup> summarySe
 
 SearchView::~SearchView() = default;
 
+// (SUI): 处理 docsum
 std::unique_ptr<DocsumReply>
 SearchView::getDocsums(const DocsumRequest & req)
 {
@@ -141,6 +142,7 @@ SearchView::getDocsumsInternal(const DocsumRequest & req)
     return reply;
 }
 
+// (SUI): 处理 search
 std::unique_ptr<SearchReply>
 SearchView::match(const SearchRequest &req, ThreadBundle &threadBundle) const {
     return _matchView->match(shared_from_this(), req, threadBundle);

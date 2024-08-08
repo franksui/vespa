@@ -86,8 +86,14 @@ RankSetup::~RankSetup() = default;
 void
 RankSetup::configure()
 {
-    setFirstPhaseRank(rank::FirstPhase::lookup(_indexEnv.getProperties()));
+    setFirstPhaseRank(rank::FirstPhase::lookup(_indexEnv.getProperties()));  // (SUI): firstRank 配置
     setSecondPhaseRank(rank::SecondPhase::lookup(_indexEnv.getProperties()));
+    /*
+     *   (SUI): https://docs.vespa.ai/en/reference/schema-reference.html#match-features
+     *   match-features is similar to summary-features, but the rank features specified here are computed in the first protocol 
+     *   phase of multi-protocol query execution, also called the match protocol phase. 
+     *   This gives a different performance trade-off, for details see feature values in results.
+     */
     for (const auto &feature: match::Feature::lookup(_indexEnv.getProperties())) {
         add_match_feature(feature);
     }
@@ -96,6 +102,7 @@ RankSetup::configure()
         addSummaryFeature(feature);
     }
     setIgnoreDefaultRankFeatures(dump::IgnoreDefaultFeatures::check(_indexEnv.getProperties()));
+    // (SUI): rank_profile rank-features
     std::vector<vespalib::string> dumpFeatures = dump::Feature::lookup(_indexEnv.getProperties());
     for (const auto & feature : dumpFeatures) {
         addDumpFeature(feature);
@@ -216,14 +223,14 @@ RankSetup::compile()
     for (const auto &feature: _match_features) {
         _match_resolver->addSeed(feature);
     }
-    for (const auto & feature :_summaryFeatures) {
+    for (const auto & feature :_summaryFeatures) {  // (SUI): summary features
         _summary_resolver->addSeed(feature);
     }
     if (!_ignoreDefaultRankFeatures) {
         VisitorAdapter adapter(*_dumpResolver);
         _factory.visitDumpFeatures(_indexEnv, adapter);
     }
-    for (const auto & feature : _dumpFeatures) {
+    for (const auto & feature : _dumpFeatures) {  // (SUI): dump features
         _dumpResolver->addSeed(feature);
     }
     _indexEnv.hintFeatureMotivation(IIndexEnvironment::RANK);
