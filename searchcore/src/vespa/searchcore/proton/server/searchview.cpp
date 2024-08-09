@@ -127,7 +127,7 @@ SearchView::getDocsumsInternal(const DocsumRequest & req)
     convertGidsToLids(req, metaStore, _matchView->getDocIdLimit().get());
     auto store(_summarySetup->createDocsumStore());
     auto mctx = _matchView->createContext();
-    auto ctx = std::make_unique<DocsumContext>(req, _summarySetup->getDocsumWriter(), *store, _matchView->getMatcher(req.ranking),
+    auto ctx = std::make_unique<DocsumContext>(req, _summarySetup->getDocsumWriter(), *store, _matchView->getMatcher(req.ranking),  // (SUI): 找到对应的 rank_profile
                                                mctx.getSearchContext(), mctx.getAttributeContext(),
                                                *_summarySetup->getAttributeManager(), getSessionManager());
     SearchView::InternalDocsumReply reply(ctx->getDocsums(), true);

@@ -48,7 +48,7 @@ void
 DocsumContext::initState()
 {
     const DocsumRequest & req = _request;
-    _docsumState._args.initFromDocsumRequest(req);
+    _docsumState._args.initFromDocsumRequest(req);  // (SUI): 初始化请求的参数
     auto [session, expectSession] = Matcher::lookupSearchSession(_sessionMgr, req);
     if (session) {
         vespalib::stringref queryStack = session->getStackDump();

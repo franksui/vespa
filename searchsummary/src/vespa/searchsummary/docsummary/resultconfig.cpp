@@ -98,6 +98,7 @@ ResultConfig::set_wanted_v8_geo_positions(bool value)
     global_useV8geoPositions = value;
 }
 
+// (SUI): summary config, 包含了 summaryfeatures 和 rankfeatures
 bool
 ResultConfig::readConfig(const SummaryConfig &cfg, const char *configId, IDocsumFieldWriterFactory& docsum_field_writer_factory)
 {

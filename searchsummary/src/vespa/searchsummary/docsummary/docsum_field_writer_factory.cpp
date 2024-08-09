@@ -58,6 +58,7 @@ DocsumFieldWriterFactory::throw_missing_source(const vespalib::string& command)
     throw IllegalArgumentException("Missing source for command '" + command + "'.");
 }
 
+// (SUI): 创建对应的 DocsumFieldWriter
 std::unique_ptr<DocsumFieldWriter>
 DocsumFieldWriterFactory::create_docsum_field_writer(const vespalib::string& field_name,
                                                      const vespalib::string& command,
